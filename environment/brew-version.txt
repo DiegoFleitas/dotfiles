@@ -1,0 +1,2 @@
+Homebrew 4.1.12
+Homebrew/homebrew-core (git revision 255f40034f3; last commit 2023-09-24)

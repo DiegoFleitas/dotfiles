@@ -1,0 +1,1 @@
+aws-cli/2.4.28 Python/3.8.8 Linux/5.13.0-39-generic exe/x86_64.ubuntu.20 prompt/off

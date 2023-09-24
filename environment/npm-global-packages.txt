@@ -1,0 +1,4 @@
+/home/diego/.nvm/versions/node/v18.17.0/lib
+├── corepack@0.18.0
+└── npm@9.6.7
+
