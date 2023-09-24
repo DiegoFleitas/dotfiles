@@ -1,0 +1,1 @@
+pip 22.3.1 from /home/linuxbrew/.linuxbrew/Cellar/python@3.10/3.10.9/lib/python3.10/site-packages/pip (python 3.10)
