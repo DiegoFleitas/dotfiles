@@ -104,15 +104,5 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-# tabtab source for serverless package
-# uninstall by removing these lines or running `tabtab uninstall serverless`
-[[ -f /home/diego/environment/serverless-appsync-lambda-httpresource-example/node_modules/@conduitvc/appsync-emulator-serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /home/diego/environment/serverless-appsync-lambda-httpresource-example/node_modules/@conduitvc/appsync-emulator-serverless/node_modules/tabtab/.completions/serverless.zsh
-# tabtab source for sls package
-# uninstall by removing these lines or running `tabtab uninstall sls`
-[[ -f /home/diego/environment/serverless-appsync-lambda-httpresource-example/node_modules/@conduitvc/appsync-emulator-serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /home/diego/environment/serverless-appsync-lambda-httpresource-example/node_modules/@conduitvc/appsync-emulator-serverless/node_modules/tabtab/.completions/sls.zsh
-# tabtab source for slss package
-# uninstall by removing these lines or running `tabtab uninstall slss`
-[[ -f /home/diego/environment/serverless-appsync-lambda-httpresource-example/node_modules/@conduitvc/appsync-emulator-serverless/node_modules/tabtab/.completions/slss.zsh ]] && . /home/diego/environment/serverless-appsync-lambda-httpresource-example/node_modules/@conduitvc/appsync-emulator-serverless/node_modules/tabtab/.completions/slss.zsh
-
 # MAVEN
 export M2_HOME="/opt/apache-maven-3.8.7"
