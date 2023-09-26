@@ -8,6 +8,8 @@ brew "chezmoi"
 brew "npm"
 brew "php@8.0"
 brew "composer"
+brew "awscli"
+# brew "python3" # should be included already
 # brew "ffmpeg"
 # Communication tools
 # ... tools like slack, zoom, teams ...
