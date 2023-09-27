@@ -62,7 +62,7 @@ echo "======================================="
 
 # Install brew packages
 echo "Installing brew packages..."
-brew bundle # This installs chezmoi among other things
+brew bundle # This installs chezmoi among other things (check Brewfile for details)
 
 # Symlink dotfiles using chezmoi
 echo "Applying dotfiles with chezmoi..."
