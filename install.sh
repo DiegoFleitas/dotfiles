@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e  # This will make the script exit if any command returns non-zero.
+set -x  # This will bash print each command before executing it.
 
 ### Essentials
 # Update packages
