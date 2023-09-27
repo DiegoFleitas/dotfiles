@@ -2,7 +2,7 @@ tap "homebrew/bundle"
 # tap "homebrew/cask"
 brew "yarn"
 brew "wget"
-brew "gcc"
+brew "gcc" # Recommended by Homebrew
 brew "chezmoi"
 # brew "node" # should be handled by nvm
 brew "npm"
