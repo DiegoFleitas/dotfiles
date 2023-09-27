@@ -27,6 +27,7 @@ echo "Log out and login as 'tempuser', then run the next part of the script."
 
 # Confirm you can read/write files in your home directory. 
 # $ echo "Hi" > test.txt & cat test.txt
+# $ rm test.txt
 
 # If the above command succeeds, it means you've successfully encrypted and can decrypt your home directory.
 
