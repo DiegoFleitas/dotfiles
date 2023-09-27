@@ -18,7 +18,7 @@ echo "Log out and login as 'tempuser', then run the next part of the script."
 # Pause script here, you'd manually log out and then continue after logging back in.
 
 # Step 3: Check & Encrypt the Home Directory
-# Note: Replace <user> with your actual username. You might also have to switch shells if the command returs not found
+# Note: Replace <user> with your actual username. You might also have to switch shells if the command returns not found
 # $ sudo ls -l ~<user>
 # $ sudo ecryptfs-migrate-home -u <user>
 
