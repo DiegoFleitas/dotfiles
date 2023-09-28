@@ -27,12 +27,8 @@ fi
 
 # Add brew to user's path if it's not already added.
 BREW_PATH="/home/linuxbrew/.linuxbrew/bin"
-if ! grep -q "$BREW_PATH" "$HOME/.profile"; then
-    echo "Adding brew to your path in .profile..."
-    export PATH='/home/linuxbrew/.linuxbrew/bin:$PATH'
-else
-    echo "Brew is already added to your path in .profile."
-fi
+echo "Setting up Homebrew vars..."
+eval "$($BREW_PATH/brew shellenv)"
 
 # Install zsh via Homebrew if not already installed
 if ! command -v zsh &> /dev/null; then
