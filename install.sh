@@ -25,6 +25,15 @@ if ! command -v brew &> /dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
+# Add brew to user's path if it's not already added.
+BREW_PATH="/home/linuxbrew/.linuxbrew/bin"
+if ! grep -q "$BREW_PATH" "$HOME/.profile"; then
+    echo "Adding brew to your path in .profile..."
+    export PATH='/home/linuxbrew/.linuxbrew/bin:$PATH'
+else
+    echo "Brew is already added to your path in .profile."
+fi
+
 # Install zsh via Homebrew if not already installed
 if ! command -v zsh &> /dev/null; then
     echo "Installing zsh via Homebrew..."
@@ -46,15 +55,6 @@ fi
 
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
-
-# Add brew to user's path if it's not already added.
-BREW_PATH="/home/linuxbrew/.linuxbrew/bin"
-if ! grep -q "$BREW_PATH" "$HOME/.zshrc"; then
-    echo "Adding brew to your path in .zshrc..."
-    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> "$HOME/.zshrc"
-else
-    echo "Brew is already added to your path in .zshrc."
-fi
 
 echo "======================================="
 echo "Brew added to PATH. (run 'source ~/.zshrc'.)"
