@@ -16,16 +16,20 @@ Clone this repo (lol). You'll need git up & running on the new setup
 
 Proceed at your own risk.
 
+Create a new Ubuntu WSL2
+
 ```powershell
 wsl --install -d ubuntu
 ```
 
+Clone repo & run dotfiles
+
 ```bash
-mkdir environment && cd environment
-git clone https://github.com/DiegoFleitas/dotfiles.git
-code dotfiles
-sh install.sh
+git clone https://github.com/DiegoFleitas/dotfiles.git environment/dotfiles
+sh environment/dotfiles/install.sh
 ```
+
+Clean up
 
 ```powershell
 wsl --unregister ubuntu
