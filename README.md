@@ -4,7 +4,7 @@ My attempt at dotfiles.
 
 ## Installation
 
-`sh -c "$(curl -fsLS git.io/chezmoi)" -- init --apply DiegoFleitas`
+`sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas`
 
 ## Testing (manual)
 
