@@ -2,15 +2,9 @@
 
 My attempt at dotfiles.
 
-## Before installation
-
-Clone this repo (lol). You'll need git up & running on the new setup
-
-`sudo apt install git`
-
 ## Installation
 
-`sh install.sh`
+`sh -c "$(curl -fsLS git.io/chezmoi)" -- init --apply DiegoFleitas`
 
 ## Testing (manual)
 
