@@ -65,10 +65,10 @@ brew bundle --file=~/.local/share/chezmoi/Brewfile
 # Install oh-my-zsh if not already installed
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     output_message "Installing oh-my-zsh..."
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    # RUNZSH flag for unattended installation
+    RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    # set zsh as default shell
+    chsh -s $(which zsh)
 fi
 
-source ~/.zshrc
-
-output_message "Dotfiles have been applied (chezmoi)."
-output_message "Installation completed."
+output_message "Bye!"
