@@ -8,6 +8,12 @@ output_message() {
     echo "======================================="
 }
 
+# Early return if root user (brew install errors out on root)
+if [ $(id -u) -eq 0 ]; then
+   output_message "Rerun as non root."
+   exit 1
+fi
+
 ### Essentials
 # Update packages
 output_message "Updating packages..."
