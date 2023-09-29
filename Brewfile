@@ -3,7 +3,6 @@ tap "homebrew/bundle"
 brew "yarn"
 brew "wget"
 brew "gcc" # Recommended by Homebrew
-brew "chezmoi"
 # brew "node" # should be handled by nvm
 brew "npm"
 brew "php@8.0"
