@@ -62,10 +62,6 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 output_message "Installing brew packages..."
 brew bundle --file=~/.local/share/chezmoi/Brewfile
 
-# Symlink dotfiles using chezmoi
-output_message "Applying dotfiles with chezmoi..."
-chezmoi apply --verbose
-
 # Install oh-my-zsh if not already installed
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     output_message "Installing oh-my-zsh..."
