@@ -26,7 +26,9 @@ Clone repo & run dotfiles
 
 ```bash
 git clone https://github.com/DiegoFleitas/dotfiles.git environment/dotfiles
-sh environment/dotfiles/install.sh
+cd environment/dotfiles
+code .
+sh install.sh
 ```
 
 Clean up
