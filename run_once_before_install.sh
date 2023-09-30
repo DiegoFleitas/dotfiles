@@ -68,4 +68,9 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     chsh -s $(which zsh)
 fi
 
+# Source configs to apply changes
+source ~/.zshrc
+source ~/.bashrc
+source ~/.profile
+
 output_message "Bye!"
