@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script will be executed by chezmoi prior to initiating the dotfiles installation. 
-# This ensures that any required setup or prerequisites are addressed before the installation commences.
+# This ensures that any required setup or prerequisites are addressed before the installation starts.
 
 # set -x  # This will bash print each command before executing it.
 
