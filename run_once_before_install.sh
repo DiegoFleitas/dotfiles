@@ -71,4 +71,4 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     chsh -s $(which zsh)
 fi
 
-output_message "Bye!" (Run source ~/.profile to apply changes)
+output_message "Bye! (Run source ~/.profile to apply changes)"
