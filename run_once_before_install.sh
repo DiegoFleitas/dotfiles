@@ -1,7 +1,6 @@
 #!/bin/bash
-# This script, run_once_before_install.sh, is intended to be executed by chezmoi
-# before the actual dotfiles installation process begins. Chezmoi will manage the
-# execution of this script to ensure necessary setup or pre-requisites are handled.
+# This script will be executed by chezmoi prior to initiating the dotfiles installation. 
+# This ensures that any required setup or prerequisites are addressed before the installation commences.
 
 # set -x  # This will bash print each command before executing it.
 
