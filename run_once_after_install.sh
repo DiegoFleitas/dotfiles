@@ -1,8 +1,6 @@
 #!/bin/sh
 
-# Switch to zsh if it's not already the current shell
-if [ "$SHELL" != "$(which zsh)" ]; then
-  chsh -s "$(which zsh)"
-fi
+# Set default shell to zsh
+sudo chsh "$(id -un)" --shell "/usr/bin/zsh"
 
 # Any other final setup steps can be added here
