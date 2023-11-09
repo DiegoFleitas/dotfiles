@@ -17,3 +17,5 @@ wsl --install -d ubuntu
 # delete
 # wsl --unregister ubuntu
 ```
+
+remember to put your own info at gitconfig file!
