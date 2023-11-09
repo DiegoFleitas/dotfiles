@@ -8,6 +8,8 @@ My attempt at dotfiles.
 
 ## Trying them out
 
+Remember to put your own info at gitconfig file!
+
 You can simply set up GitHub CodeSpaces to pick up dotfiles [here](https://github.com/settings/codespaces)
 or create a new Ubuntu WSL2, install & clean up after
 ex:
@@ -18,4 +20,3 @@ wsl --install -d ubuntu
 # wsl --unregister ubuntu
 ```
 
-remember to put your own info at gitconfig file!
