@@ -14,5 +14,6 @@ ex:
 
 ```powershell
 wsl --install -d ubuntu
-wsl --unregister ubuntu
+# delete
+# wsl --unregister ubuntu
 ```
