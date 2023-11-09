@@ -5,8 +5,8 @@ brew "wget"
 brew "gcc" # Recommended by Homebrew
 # brew "node" # should be handled by nvm
 brew "npm"
-brew "php@8.0"
-brew "composer"
+# brew "php@8.0" # not using this stack
+# brew "composer"
 brew "awscli"
 # brew "python3" # should be included already
 # brew "ffmpeg"
