@@ -71,4 +71,18 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     chsh -s $(which zsh)
 fi
 
+# Install pyenv if not already installed
+if ! command -v pyenv &> /dev/null; then
+    output_message "Installing pyenv..."
+    brew install pyenv
+fi
+
+# Setup python environment
+if ! pyenv versions | grep -q "3.9.7"; then
+    output_message "Installing Python 3.9.7..."
+    pyenv install 3.9.7
+    output_message "Setting global Python version to 3.9.7..."
+    pyenv global 3.9.7
+fi
+
 output_message "Bye! (Run source ~/.profile to apply changes)"
