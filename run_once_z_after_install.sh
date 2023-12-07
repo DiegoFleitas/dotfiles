@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Attempt to set default shell to zsh if not already set
-if [ "$SHELL" != "/usr/bin/zsh" ]; then
+if [ "$SHELL" != "$(which zsh)" ]; then
   chsh -s $(which zsh)
 fi
 
