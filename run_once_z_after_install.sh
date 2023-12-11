@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Add zsh to /etc/shells if it's not already there
+# This is necessary because chsh only accepts shells listed in /etc/shells.
+if ! grep -q "$(which zsh)" /etc/shells; then
+  echo "$(which zsh)" | sudo tee -a /etc/shells
+fi
+
 # Attempt to set default shell to zsh if not already set
 if [ "$SHELL" != "$(which zsh)" ]; then
   chsh -s $(which zsh)
@@ -10,4 +16,4 @@ if [ -z "$ZSH_VERSION" ]; then
   exec zsh
 fi
 
-# Any other final setup steps can be added here
+# Any other final setup steps...
