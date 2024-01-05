@@ -60,7 +60,8 @@ fi
 
 # Install brew packages
 output_message "Installing brew packages..."
-brew bundle --file=~/.local/share/chezmoi/Brewfile
+# Use Brewfile from chezmoi directory or fall back to this one
+brew bundle --file=${HOME}/.local/share/chezmoi/Brewfile 2>/dev/null || brew bundle
 
 # Install oh-my-zsh if not already installed
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
