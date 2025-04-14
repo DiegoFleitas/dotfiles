@@ -74,4 +74,4 @@ else
   output_message "pyenv not found. Skipping pyenv update."
 fi
 
-output_message "Setup completed successfully!"
+output_message "Setup completed successfully! (You can run apps.sh now.)"
