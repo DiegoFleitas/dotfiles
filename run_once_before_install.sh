@@ -79,11 +79,18 @@ if ! command -v pyenv &> /dev/null; then
 fi
 
 # Setup python environment
-if ! pyenv versions | grep -q "3.9.7"; then
-    output_message "Installing Python 3.9.7..."
-    pyenv install 3.9.7
-    output_message "Setting global Python version to 3.9.7..."
-    pyenv global 3.9.7
+if ! pyenv versions | grep -q "3.10.9"; then
+    output_message "Installing Python 3.10.9..."
+    pyenv install 3.10.9
+    output_message "Setting global Python version to 3.10.9..."
+    pyenv global 3.10.9
+fi
+
+
+if command -v python3 &> /dev/null; then
+    output_message "Python 3.10.9 installed successfully."
+else
+    output_message "Python installation failed."
 fi
 
 output_message "Bye! (Run source ~/.profile to apply changes)"

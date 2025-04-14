@@ -21,3 +21,7 @@ wsl --install -d ubuntu
 # wsl --unregister ubuntu
 ```
 
+## Compatibility
+
+This repository is now updated and tested for compatibility with Ubuntu 22.04.5 LTS. Ensure you are using this version or later for best results.
+
