@@ -22,6 +22,22 @@ fi
 output_message "Updating packages..."
 sudo apt update && sudo apt upgrade -y
 
+# Install build essentials and required dependencies
+output_message "Installing build essentials and dependencies..."
+sudo apt install -y \
+  build-essential \
+  libssl-dev \
+  libffi-dev \
+  python3-dev \
+  zlib1g-dev \
+  libbz2-dev \
+  libreadline-dev \
+  libsqlite3-dev \
+  curl \
+  git \
+  wget \
+  zsh
+
 # Install git if not already installed
 # (I usually install git manually, but this is here just in case)
 if ! command -v git &> /dev/null; then
@@ -44,12 +60,6 @@ fi
 # Add brew to user's path if it's not already added.
 BREW_PATH="/home/linuxbrew/.linuxbrew/bin"
 eval "$($BREW_PATH/brew shellenv)"
-
-# Install zsh via Homebrew if not already installed
-if ! command -v zsh &> /dev/null; then
-    output_message "Installing zsh via Homebrew..."
-    brew install zsh
-fi
 
 ### Development tools
 # Install nvm if not already installed
@@ -85,7 +95,6 @@ if ! pyenv versions | grep -q "3.10.9"; then
     output_message "Setting global Python version to 3.10.9..."
     pyenv global 3.10.9
 fi
-
 
 if command -v python3 &> /dev/null; then
     output_message "Python 3.10.9 installed successfully."
