@@ -4,9 +4,13 @@ My attempt at dotfiles.
 
 ## Installation
 
-`cd ~`
+```bash
+cd ~
+```
 
-`sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas`
+```bash
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas
+```
 
 ## Trying them out
 
