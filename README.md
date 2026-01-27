@@ -4,13 +4,8 @@ My attempt at dotfiles.
 
 ## Installation
 
-```bash
-cd ~
-```
-
-```bash
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas
-```
+`cd ~`
+`sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas`
 
 ## Trying them out
 
@@ -26,6 +21,16 @@ wsl --install -d ubuntu
 # delete
 # wsl --unregister ubuntu
 ```
+
+## Git config
+
+> [!IMPORTANT]
+> The bundled git config uses MY OWN name and email. After installing, override with yours:
+>
+> ```bash
+> git config --global user.name "Your Name"
+> git config --global user.email "you@example.com"
+> ```
 
 ## Compatibility
 
