@@ -5,6 +5,7 @@ My attempt at dotfiles.
 ## Installation
 
 `cd ~`
+
 `sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas`
 
 ## Trying them out
