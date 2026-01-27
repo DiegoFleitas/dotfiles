@@ -79,7 +79,12 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     # RUNZSH flag for unattended installation
     RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     # set zsh as default shell
-    chsh -s $(which zsh)
+    if grep -qi microsoft /proc/version; then
+        # WSL detected - add to shell profile instead of chsh
+        echo "exec zsh" >> ~/.bashrc
+    else
+        chsh -s $(which zsh)
+    fi
 fi
 
 # Install pyenv if not already installed
