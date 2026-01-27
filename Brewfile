@@ -1,4 +1,3 @@
-tap "homebrew/bundle"
 # tap "homebrew/cask"
 brew "yarn"
 brew "wget"
