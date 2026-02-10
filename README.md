@@ -1,6 +1,7 @@
 # dotfiles
 
-My attempt at dotfiles.
+Personal configuration files for Linux and macOS environments.  
+Reproducible setup using `chezmoi`, shell scripts, and versioned configs.
 
 ## Installation
 
