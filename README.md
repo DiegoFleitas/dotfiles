@@ -26,12 +26,7 @@ wsl --install -d ubuntu
 ## Git config
 
 > [!IMPORTANT]
-> The bundled git config uses MY OWN name and email. After installing, override with yours:
->
-> ```bash
-> git config --global user.name "Your Name"
-> git config --global user.email "you@example.com"
-> ```
+> On first `chezmoi apply` you will be prompted for your git `user.name` and `user.email`; those values are cached. To change them later, run `chezmoi apply` again or edit `~/.config/chezmoi/chezmoi.toml`.
 
 ## Compatibility
 

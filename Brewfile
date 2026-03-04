@@ -1,5 +1,6 @@
 # tap "homebrew/cask"
 brew "yarn"
+brew "pnpm"
 brew "wget"
 brew "gcc" # Recommended by Homebrew
 # brew "node" # should be handled by nvm
