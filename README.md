@@ -6,7 +6,7 @@ Personal configuration files for Linux and macOS environments. Reproducible setu
 
 - **Shell:** zsh with [oh-my-zsh](https://ohmyz.sh/)
 - **Dot configs:** `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
-- **Dev stack:** [nvm](https://github.com/nvm-sh/nvm) (Node), [pyenv](https://github.com/pyenv/pyenv) (Python 3.10.9), [Homebrew](https://brew.sh/) + Brewfile (yarn, pnpm, awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), etc.). Shell auto-activates a `.venv` in the current directory when present.
+- **Dev stack:** [nvm](https://github.com/nvm-sh/nvm) (Node 18, [Corepack](https://nodejs.org/api/corepack.html) enabled), [pyenv](https://github.com/pyenv/pyenv) (Python 3.10.9), [Homebrew](https://brew.sh/) + Brewfile (yarn, pnpm, [biome](https://biomejs.dev/) for JS/TS lint+format, awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), etc.). Shell auto-uses `.nvmrc` and auto-activates `.venv` in the current directory when present.
 - **Run scripts:** system deps and tool installs run automatically in order; optional `apps.sh` for extra apps (run manually after apply)
 
 ## Installation

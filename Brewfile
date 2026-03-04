@@ -1,6 +1,8 @@
 # tap "homebrew/cask"
+# Node tooling (node via nvm; corepack enable in run_once_before_finalize.sh)
 brew "yarn"
 brew "pnpm"
+brew "biome"   # lint + format for JS/TS (replaces eslint + prettier in one binary)
 brew "wget"
 brew "gcc" # Recommended by Homebrew
 # brew "node" # should be handled by nvm
