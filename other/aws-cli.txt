@@ -1,2 +1,0 @@
-# Update AWS CLI version to the latest compatible version for Ubuntu 22.04.5 LTS
-aws-cli/2.12.0 Python/3.10.9 Linux/5.15.0-70-generic exe/x86_64.ubuntu.22 prompt/off
