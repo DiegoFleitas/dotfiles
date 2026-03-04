@@ -30,6 +30,8 @@ Then run `source ~/.profile` (or open a new shell) to pick up changes.
 
 ### GitHub Codespaces
 
+**Quick try:** Open the [Codespaces blank template](https://github.com/github/codespaces-blank) and use **Code → Open on Codespaces** to spin up a Codespace. With dotfiles enabled in your [Codespaces settings](https://github.com/settings/codespaces) (see below), the new Codespace will use these configs.
+
 You can use this repo (or your fork) so every new Codespace gets these configs automatically:
 
 1. Open [GitHub Codespaces settings](https://github.com/settings/codespaces).
