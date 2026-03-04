@@ -20,7 +20,7 @@ fi
 # Add zsh to /etc/shells if it's not already there
 # This is necessary because chsh only accepts shells listed in /etc/shells.
 if ! grep -q "$(which zsh)" /etc/shells; then
-  echo "$(which zsh)" | sudo tee -a /etc/shells
+  which zsh | sudo tee -a /etc/shells
   output_message "Added zsh to /etc/shells."
 else
   output_message "Zsh is already in /etc/shells."
@@ -28,7 +28,7 @@ fi
 
 # Attempt to set default shell to zsh if not already set
 if [ "$SHELL" != "$(which zsh)" ]; then
-  chsh -s $(which zsh)
+  chsh -s "$(which zsh)"
   output_message "Default shell changed to Zsh. Please log out and log back in for changes to take effect."
 fi
 
@@ -39,7 +39,9 @@ output_message "Continuing setup process..."
 if [ -f "$HOME/.nvm/nvm.sh" ]; then
   output_message "Loading and updating nvm..."
   export NVM_DIR="$HOME/.nvm"
+  # shellcheck disable=SC1091
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  # shellcheck disable=SC1091
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
   nvm install 18 && nvm alias default 18
 else

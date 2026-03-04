@@ -12,7 +12,7 @@ output_message() {
 }
 
 # Early return if root user (brew install errors out on root)
-if [ $(id -u) -eq 0 ]; then
+if [ "$(id -u)" -eq 0 ]; then
    output_message "Rerun as non root."
    exit 1
 fi
@@ -71,7 +71,7 @@ fi
 # Install brew packages
 output_message "Installing brew packages..."
 # Use Brewfile from chezmoi directory or fall back to this one
-brew bundle --file=${HOME}/.local/share/chezmoi/Brewfile 2>/dev/null || brew bundle
+brew bundle --file="${HOME}/.local/share/chezmoi/Brewfile" 2>/dev/null || brew bundle
 
 # Install oh-my-zsh if not already installed
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
@@ -83,7 +83,7 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
         # WSL detected - add to shell profile instead of chsh
         echo "exec zsh" >> ~/.bashrc
     else
-        chsh -s $(which zsh)
+        chsh -s "$(which zsh)"
     fi
 fi
 

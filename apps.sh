@@ -34,7 +34,7 @@ install_app() {
   case $type in
     apt)
       sudo apt update
-      sudo apt install -y $source
+      sudo apt install -y "$source"
       ;;
     deb)
       wget -q "$source" -O /tmp/package.deb
@@ -42,7 +42,7 @@ install_app() {
       rm /tmp/package.deb
       ;;
     snap)
-      sudo snap install $source
+      sudo snap install "$source"
       ;;
     repo)
       # For Docker and similar applications that need repos
@@ -54,16 +54,16 @@ install_app() {
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           sudo apt update
           sudo apt install -y docker-ce
-          sudo usermod -aG docker $USER
+          sudo usermod -aG docker "$USER"
           ;;
       esac
       ;;
     ppa)
       # For apps that need PPAs
       IFS=' ' read -r ppa_path package_name <<< "$source"
-      sudo add-apt-repository -y $ppa_path
+      sudo add-apt-repository -y "$ppa_path"
       sudo apt update
-      sudo apt install -y $package_name
+      sudo apt install -y "$package_name"
       ;;
   esac
   
