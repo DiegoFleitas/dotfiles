@@ -20,9 +20,9 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas
 
 Chezmoi will clone this repo and run, in order:
 
-1. **run_once_before_install.sh** — apt update/upgrade, build deps, Homebrew, nvm, oh-my-zsh, pyenv, Python 3.10.9
+1. **run_once_after_prereqs.sh** — apt update/upgrade, build deps, Homebrew, nvm, oh-my-zsh, pyenv, Python 3.10.9
 2. **Dotfiles apply** — symlinks/copies for config files
-3. **run_once_z_after_install.sh** — default shell (zsh), brew/nvm/omz/pyenv updates
+3. **run_once_before_finalize.sh** — default shell (zsh), brew/nvm/omz/pyenv updates
 
 Then run `source ~/.profile` (or open a new shell) to pick up changes.
 

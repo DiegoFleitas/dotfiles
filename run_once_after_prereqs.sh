@@ -1,6 +1,5 @@
 #!/bin/bash
-# This script will be executed by chezmoi prior to initiating the dotfiles installation. 
-# This ensures that any required setup or prerequisites are addressed before the installation starts.
+# This script runs at the start of chezmoi apply (run_after_): system deps, brew, nvm, oh-my-zsh, pyenv.
 
 # set -x  # This will bash print each command before executing it.
 
