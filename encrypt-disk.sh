@@ -3,7 +3,7 @@
 
 # Reminder for backup
 echo "Ensure you've backed up all your data before proceeding!"
-read -p "Press enter to continue if you've backed up, or Ctrl+C to exit." dummyVar # dummyVar placeholder to capture input
+read -r -p "Press enter to continue if you've backed up, or Ctrl+C to exit." _
 
 # Step 1: Install Encryption Packages
 sudo apt update
