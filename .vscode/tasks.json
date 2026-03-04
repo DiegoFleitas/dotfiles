@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Backup dotfiles (before reinstall)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/backup-dotfiles.sh",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Restore dotfiles from backup (latest)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/restore-dotfiles.sh",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Restore dotfiles from backup...",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/restore-dotfiles.sh \"${input:backupDir}\"",
+      "group": "none",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "backupDir",
+      "type": "promptString",
+      "description": "Backup folder (e.g. .backups/2025-03-03T22-30-00 or full path)",
+      "default": ""
+    }
+  ]
+}
