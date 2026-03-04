@@ -1,34 +1,52 @@
 # dotfiles
 
-Personal configuration files for Linux and macOS environments.  
-Reproducible setup using `chezmoi`, shell scripts, and versioned configs.
+Personal configuration files for Linux and macOS environments. Reproducible setup using [chezmoi](https://www.chezmoi.io/), shell scripts, and versioned configs.
+
+## What's included
+
+- **Shell:** zsh with [oh-my-zsh](https://ohmyz.sh/)
+- **Dot configs:** `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
+- **Dev stack:** [nvm](https://github.com/nvm-sh/nvm) (Node), [pyenv](https://github.com/pyenv/pyenv) (Python 3.10.9), [Homebrew](https://brew.sh/) + Brewfile (yarn, pnpm, awscli, etc.)
+- **Run scripts:** system deps and tool installs run automatically in order; optional `apps.sh` for extra apps (run manually after apply)
 
 ## Installation
 
-`cd ~`
-`sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas`
+From your home directory:
+
+```bash
+cd ~
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas
+```
+
+Chezmoi will clone this repo and run, in order:
+
+1. **run_once_before_install.sh** — apt update/upgrade, build deps, Homebrew, nvm, oh-my-zsh, pyenv, Python 3.10.9
+2. **Dotfiles apply** — symlinks/copies for config files
+3. **run_once_z_after_install.sh** — default shell (zsh), brew/nvm/omz/pyenv updates
+
+Then run `source ~/.profile` (or open a new shell) to pick up changes.
 
 ## Trying them out
 
-Remember to put your own info at gitconfig file!
+- **GitHub Codespaces:** Configure dotfiles in [GitHub Codespaces settings](https://github.com/settings/codespaces). Codespaces will run the install using `bootstrap.sh`.
+- **New Ubuntu WSL2:** Install a distro, then run the install snippet above. Example:
 
-You can simply set up GitHub CodeSpaces to pick up dotfiles [here](https://github.com/settings/codespaces), CodeSpaces will run the installation snippet by itself picking it up from `bootstrap.sh`
-
-Or create a new Ubuntu WSL2, install & clean up after. 
-ex:
-
-```powershell
-wsl --install -d ubuntu
-# delete
-# wsl --unregister ubuntu
-```
+  ```powershell
+  wsl --install -d ubuntu
+  # To remove later: wsl --unregister ubuntu
+  ```
 
 ## Git config
 
 > [!IMPORTANT]
 > On first `chezmoi apply` you will be prompted for your git `user.name` and `user.email`; those values are cached. To change them later, run `chezmoi apply` again or edit `~/.config/chezmoi/chezmoi.toml`.
 
+Remember to set your own name and email in the gitconfig when prompted.
+
+## Optional: apps.sh
+
+After installation, you can run `apps.sh` to install extra applications (Docker, etc.) according to `apps.conf`. This is not run automatically by chezmoi.
+
 ## Compatibility
 
-This repository is now updated and tested for compatibility with Ubuntu 22.04.5 LTS. Ensure you are using this version or later for best results.
-
+Tested on **Ubuntu 22.04.5 LTS** and later. Best results on that version or newer.
