@@ -1,6 +1,5 @@
 #!/bin/bash
-# This script will be executed by chezmoi prior to initiating the dotfiles installation. 
-# This ensures that any required setup or prerequisites are addressed before the installation starts.
+# Optional script: run manually after chezmoi apply. Installs extra apps listed in apps.conf.
 
 # set -x  # This will bash print each command before executing it.
 
@@ -10,6 +9,9 @@ output_message() {
     echo "$1"
     echo "======================================="
 }
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+APPS_CONF="${SCRIPT_DIR}/apps.conf"
 
 # Install essential applications
 output_message "Installing essential applications..."
@@ -49,12 +51,18 @@ install_app() {
       case $source in
         docker-ce)
           sudo apt update
-          sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt install -y ca-certificates curl
+          sudo install -m 0755 -d /etc/apt/keyrings
+          sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+          sudo chmod a+r /etc/apt/keyrings/docker.asc
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
           sudo apt update
           sudo apt install -y docker-ce
           sudo usermod -aG docker "$USER"
+          ;;
+        *)
+          output_message "Unknown repo: $source"
+          return 1
           ;;
       esac
       ;;
@@ -77,9 +85,13 @@ install_app() {
 }
 
 # Read the app configuration file and install each app
+if [[ ! -f "$APPS_CONF" ]]; then
+  output_message "Error: config file not found: $APPS_CONF"
+  exit 1
+fi
 while IFS=: read -r name type detection source || [[ -n "$name" ]]; do
   # Skip comments and empty lines
   [[ "$name" =~ ^#.*$ || -z "$name" ]] && continue
   
   install_app "$name" "$type" "$detection" "$source"
-done < "/home/diego/environment/dotfiles/apps.conf"
+done < "$APPS_CONF"
