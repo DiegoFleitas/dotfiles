@@ -28,8 +28,20 @@ Then run `source ~/.profile` (or open a new shell) to pick up changes.
 
 ## Trying them out
 
-- **GitHub Codespaces:** Configure dotfiles in [GitHub Codespaces settings](https://github.com/settings/codespaces). Codespaces will run the install using `bootstrap.sh`.
-- **New Ubuntu WSL2:** Install a distro, then run the install snippet above. Example:
+### GitHub Codespaces
+
+You can use this repo (or your fork) so every new Codespace gets these configs automatically:
+
+1. Open [GitHub Codespaces settings](https://github.com/settings/codespaces).
+2. Under **Dotfiles**, use the dropdown to select this repository (e.g. `DiegoFleitas/dotfiles` or your fork).
+3. Turn on **Automatically install dotfiles**.
+4. Create a new Codespace from any repo. Codespaces will clone this dotfiles repo and run `bootstrap.sh`, which runs the same chezmoi install as the snippet above.
+
+Changes to this repo only apply to **new** Codespaces; existing ones are unchanged.
+
+### New Ubuntu WSL2
+
+Install a distro, then run the install snippet above. Example:
 
   ```powershell
   wsl --install -d ubuntu

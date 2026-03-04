@@ -1,5 +1,6 @@
 #!/bin/bash
 # Optional script: run manually after chezmoi apply. Installs extra apps listed in apps.conf.
+# By default runs interactively: prompts for each app. Use -y/--yes to install all without prompting.
 
 # set -x  # This will bash print each command before executing it.
 
@@ -13,8 +14,19 @@ output_message() {
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APPS_CONF="${SCRIPT_DIR}/apps.conf"
 
-# Install essential applications
-output_message "Installing essential applications..."
+# Parse args: -y or --yes = install all without prompting
+INSTALL_ALL=false
+for arg in "$@"; do
+  case $arg in
+    -y|--yes) INSTALL_ALL=true ;;
+  esac
+done
+
+if [[ "$INSTALL_ALL" == true ]]; then
+  output_message "Installing all applications from config (non-interactive)..."
+else
+  output_message "Interactive mode: you will be prompted for each application."
+fi
 
 # Function to install applications from config file
 install_app() {
@@ -84,6 +96,20 @@ install_app() {
   fi
 }
 
+# Ask user whether to install this app (when interactive). Returns 0 to install, 1 to skip.
+should_install_app() {
+  local name=$1
+  if [[ "$INSTALL_ALL" == true ]]; then
+    return 0
+  fi
+  echo ""
+  read -r -p "Install $name? [Y/n] " reply
+  case "${reply,,}" in
+    n|no) return 1 ;;
+    *)    return 0 ;;
+  esac
+}
+
 # Read the app configuration file and install each app
 if [[ ! -f "$APPS_CONF" ]]; then
   output_message "Error: config file not found: $APPS_CONF"
@@ -92,6 +118,7 @@ fi
 while IFS=: read -r name type detection source || [[ -n "$name" ]]; do
   # Skip comments and empty lines
   [[ "$name" =~ ^#.*$ || -z "$name" ]] && continue
-  
+
+  should_install_app "$name" || continue
   install_app "$name" "$type" "$detection" "$source"
 done < "$APPS_CONF"
