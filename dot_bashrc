@@ -124,5 +124,17 @@ if command -v pyenv 1>/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
+# Auto-activate .venv when entering a directory that has one
+_autovenv() {
+  if [[ -d .venv ]] && [[ "${VIRTUAL_ENV:-}" != "$PWD/.venv" ]]; then
+    type deactivate &>/dev/null && deactivate 2>/dev/null
+    source .venv/bin/activate
+  elif ! [[ -d .venv ]] && type deactivate &>/dev/null; then
+    deactivate 2>/dev/null
+  fi
+}
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }_autovenv"
+_autovenv
+
 # Python alias
 alias python=python3
