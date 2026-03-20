@@ -1,5 +1,7 @@
 # dotfiles
 
+[![Test](https://github.com/DiegoFleitas/dotfiles/actions/workflows/test.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/test.yml)
+
 Personal Linux/macOS environment setup with [chezmoi](https://www.chezmoi.io/), shell scripts, and versioned configs.
 
 ## TL;DR (new machine)
@@ -117,3 +119,27 @@ bash scripts/check-version-drift.sh
 - `.github/renovate.json` updates:
   - GitHub Actions versions
   - `NVM_INSTALL_VERSION` in `versions.env` (regex manager)
+
+## Testing
+
+Shell tests use [bats-core](https://github.com/bats-core/bats-core).
+
+Run locally:
+
+```bash
+./scripts/test.sh
+```
+
+Direct command (if `bats` is already installed):
+
+```bash
+bats test/
+```
+
+CI:
+- `.github/workflows/test.yml` installs Bats and runs `bats test/` on push and pull request events
+
+Current test coverage:
+- `scripts/check-version-drift.sh` passes with valid repo state
+- `scripts/check-version-drift.sh` fails when `.nvmrc` and `versions.env` diverge
+- `run_once_after_prereqs.sh` and `run_once_before_finalize.sh` keep using centralized version variables
