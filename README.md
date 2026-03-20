@@ -7,20 +7,6 @@ Personal Linux/macOS environment setup with [chezmoi](https://www.chezmoi.io/), 
 
 Quick links: [new machine](#tldr-new-machine) | [update current machine](#tldr-update-current-machine)
 
-## TL;DR (new machine)
-
-1. Run:
-   ```bash
-   cd ~
-   sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas
-   ```
-2. Open a new shell (or run `source ~/.profile`)
-3. Confirm tools:
-   - `zsh --version`
-   - `node -v`
-   - `python --version`
-4. Optional: run `apps.sh` for extra apps (Docker, etc.)
-
 ## Quick start
 
 From your home directory:
@@ -160,3 +146,17 @@ Then open a new shell (or run `source ~/.profile`), and confirm tools:
 - `zsh --version`
 - `node -v`
 - `python --version`
+
+## TL;DR (new machine)
+
+1. Run:
+   ```bash
+   cd ~
+   sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas
+   ```
+2. Open a new shell (or run `source ~/.profile`)
+3. Confirm tools:
+   - `zsh --version`
+   - `node -v`
+   - `python --version`
+4. Optional: run `apps.sh` for extra apps (Docker, etc.)
