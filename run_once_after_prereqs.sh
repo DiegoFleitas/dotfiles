@@ -18,6 +18,12 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 : "${PYTHON_VERSION:=3.12}"
 : "${NVM_INSTALL_VERSION:=v0.40.3}"
 
+if [ "$(uname -s)" = "Linux" ] && command -v apt >/dev/null 2>&1; then
+    HAS_APT=1
+else
+    HAS_APT=0
+fi
+
 # Early return if root user (brew install errors out on root)
 if [ "$(id -u)" -eq 0 ]; then
    output_message "Rerun as non root."
@@ -25,37 +31,49 @@ if [ "$(id -u)" -eq 0 ]; then
 fi
 
 ### Essentials
-# Update packages
-output_message "Updating packages..."
-sudo apt update && sudo apt upgrade -y
+if [ "${HAS_APT}" -eq 1 ]; then
+    # Update packages
+    output_message "Updating apt packages..."
+    sudo apt update && sudo apt upgrade -y
 
-# Install build essentials and required dependencies
-output_message "Installing build essentials and dependencies..."
-sudo apt install -y \
-  build-essential \
-  libssl-dev \
-  libffi-dev \
-  python3-dev \
-  zlib1g-dev \
-  libbz2-dev \
-  libreadline-dev \
-  libsqlite3-dev \
-  curl \
-  git \
-  wget \
-  zsh
+    # Install build essentials and required dependencies
+    output_message "Installing apt build dependencies..."
+    sudo apt install -y \
+      build-essential \
+      libssl-dev \
+      libffi-dev \
+      python3-dev \
+      zlib1g-dev \
+      libbz2-dev \
+      libreadline-dev \
+      libsqlite3-dev \
+      curl \
+      git \
+      wget \
+      zsh
+else
+    output_message "apt not available. Skipping apt dependency setup."
+fi
 
 # Install git if not already installed
 # (I usually install git manually, but this is here just in case)
 if ! command -v git &> /dev/null; then
     output_message "Installing git..."
-    sudo apt install git -y
+    if [ "${HAS_APT}" -eq 1 ]; then
+        sudo apt install git -y
+    else
+        output_message "Package manager for git not detected. Install git manually."
+    fi
 fi
 
 # Install curl if not already installed
 if ! command -v curl &> /dev/null; then
     output_message "Installing curl..."
-    sudo apt install curl -y
+    if [ "${HAS_APT}" -eq 1 ]; then
+        sudo apt install curl -y
+    else
+        output_message "Package manager for curl not detected. Install curl manually."
+    fi
 fi
 
 # Install Homebrew if not already installed
@@ -64,9 +82,14 @@ if ! command -v brew &> /dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-# Add brew to user's path if it's not already added.
-BREW_PATH="/home/linuxbrew/.linuxbrew/bin"
-eval "$($BREW_PATH/brew shellenv)"
+# Add brew to user's path.
+if [ -x "/home/linuxbrew/.linuxbrew/bin/brew" ]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [ -x "/opt/homebrew/bin/brew" ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x "/usr/local/bin/brew" ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+fi
 
 ### Development tools
 # Install nvm if not already installed
