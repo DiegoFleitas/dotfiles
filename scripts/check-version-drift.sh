@@ -24,9 +24,9 @@ trimmed_nvmrc="$(tr -d '[:space:]' < "${ROOT_DIR}/dot_nvmrc")"
 [ -n "${trimmed_nvmrc}" ] || fail "dot_nvmrc is empty"
 [ "${trimmed_nvmrc}" = "${NODE_VERSION}" ] || fail "dot_nvmrc (${trimmed_nvmrc}) != NODE_VERSION (${NODE_VERSION})"
 
-grep -q 'nvm alias default "${NODE_VERSION}"' "${ROOT_DIR}/run_once_before_finalize.sh" \
+grep -q "nvm alias default \"\\\${NODE_VERSION}\"" "${ROOT_DIR}/run_once_before_finalize.sh" \
   || fail "run_once_before_finalize.sh is not using NODE_VERSION for default alias"
-grep -q 'nvm install "${NODE_VERSION}"' "${ROOT_DIR}/run_once_before_finalize.sh" \
+grep -q "nvm install \"\\\${NODE_VERSION}\"" "${ROOT_DIR}/run_once_before_finalize.sh" \
   || fail "run_once_before_finalize.sh is not using NODE_VERSION for install"
 grep -q "NVM_INSTALL_VERSION" "${ROOT_DIR}/run_once_after_prereqs.sh" \
   || fail "run_once_after_prereqs.sh is not using NVM_INSTALL_VERSION"
