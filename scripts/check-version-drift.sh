@@ -3,15 +3,25 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-# shellcheck disable=SC1091
-. "${ROOT_DIR}/versions.env"
 
 fail() {
   echo "Version drift: $1" >&2
   exit 1
 }
 
+VERSIONS_FILE="${ROOT_DIR}/versions.env"
+DOT_NVMRC_FILE="${ROOT_DIR}/dot_nvmrc"
+
+[ -f "${VERSIONS_FILE}" ] || fail "missing versions.env at ${VERSIONS_FILE}"
+# shellcheck disable=SC1091
+. "${VERSIONS_FILE}"
+[ -n "${NODE_VERSION:-}" ] || fail "NODE_VERSION is missing in versions.env"
+[ -n "${PYTHON_VERSION:-}" ] || fail "PYTHON_VERSION is missing in versions.env"
+[ -n "${NVM_INSTALL_VERSION:-}" ] || fail "NVM_INSTALL_VERSION is missing in versions.env"
+
+[ -f "${DOT_NVMRC_FILE}" ] || fail "missing dot_nvmrc at ${DOT_NVMRC_FILE}"
 trimmed_nvmrc="$(tr -d '[:space:]' < "${ROOT_DIR}/dot_nvmrc")"
+[ -n "${trimmed_nvmrc}" ] || fail "dot_nvmrc is empty"
 [ "${trimmed_nvmrc}" = "${NODE_VERSION}" ] || fail "dot_nvmrc (${trimmed_nvmrc}) != NODE_VERSION (${NODE_VERSION})"
 
 rg -q "nvm alias default \"\\$\\{NODE_VERSION\\}\"" "${ROOT_DIR}/run_once_before_finalize.sh" \

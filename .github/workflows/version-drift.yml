@@ -17,5 +17,15 @@ jobs:
       - name: Install ripgrep
         run: sudo apt-get update && sudo apt-get install -y ripgrep
 
+      - name: Preflight workspace diagnostics
+        run: |
+          pwd
+          ls -la
+          test -f versions.env
+          test -f dot_nvmrc
+          echo "dot_nvmrc: $(tr -d '[:space:]' < dot_nvmrc)"
+          echo "versions.env:"
+          cat versions.env
+
       - name: Check version drift
         run: bash scripts/check-version-drift.sh
