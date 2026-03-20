@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Define output_message function
 output_message() {
   echo "===================================="
@@ -14,6 +16,10 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 : "${NODE_VERSION:=22}"
 : "${PYTHON_VERSION:=3.12}"
 
+is_wsl() {
+  grep -qi microsoft /proc/version 2>/dev/null
+}
+
 # Ensure Zsh is installed before proceeding
 if ! command -v zsh &> /dev/null; then
   echo "Zsh is not installed."
@@ -26,17 +32,22 @@ fi
 
 # Add zsh to /etc/shells if it's not already there
 # This is necessary because chsh only accepts shells listed in /etc/shells.
-if ! grep -q "$(which zsh)" /etc/shells; then
-  which zsh | sudo tee -a /etc/shells
+ZSH_BIN="$(command -v zsh)"
+if ! grep -q "${ZSH_BIN}" /etc/shells; then
+  echo "${ZSH_BIN}" | sudo tee -a /etc/shells
   output_message "Added zsh to /etc/shells."
 else
   output_message "Zsh is already in /etc/shells."
 fi
 
 # Attempt to set default shell to zsh if not already set
-if [ "$SHELL" != "$(which zsh)" ]; then
-  chsh -s "$(which zsh)"
-  output_message "Default shell changed to Zsh. Please log out and log back in for changes to take effect."
+if [ "${SHELL:-}" != "${ZSH_BIN}" ]; then
+  if is_wsl; then
+    output_message "WSL detected. Skipping chsh to avoid interactive prompts."
+  else
+    chsh -s "${ZSH_BIN}"
+    output_message "Default shell changed to Zsh. Please log out and log back in for changes to take effect."
+  fi
 fi
 
 # Instead of exec zsh, run the remaining commands in the current shell
@@ -61,8 +72,14 @@ fi
 
 # Check if brew is available before updating
 if command -v brew &> /dev/null; then
-  output_message "Updating Homebrew and its packages..."
-  brew update && brew upgrade
+  output_message "Updating Homebrew..."
+  brew update
+  if [ "${DOTFILES_BREW_UPGRADE:-0}" = "1" ]; then
+    output_message "DOTFILES_BREW_UPGRADE=1, upgrading Homebrew packages..."
+    brew upgrade
+  else
+    output_message "Skipping brew upgrade by default (set DOTFILES_BREW_UPGRADE=1 to enable)."
+  fi
 else
   output_message "Homebrew not found. Skipping Homebrew update."
 fi
@@ -70,7 +87,11 @@ fi
 # Update oh-my-zsh
 if [ -d "$HOME/.oh-my-zsh" ]; then
   output_message "Updating oh-my-zsh..."
-  zsh -ic "omz update"
+  ZDOTDIR="${HOME}" ZSH_DISABLE_COMPFIX=true zsh -f -c '
+    export ZSH="$HOME/.oh-my-zsh"
+    [ -f "$ZSH/oh-my-zsh.sh" ] && . "$ZSH/oh-my-zsh.sh"
+    command -v omz >/dev/null 2>&1 && omz update
+  '
 else
   output_message "oh-my-zsh not found. Skipping oh-my-zsh update."
 fi

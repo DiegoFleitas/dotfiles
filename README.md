@@ -66,6 +66,10 @@ wsl --install -d ubuntu
 # To remove later: wsl --unregister ubuntu
 ```
 
+WSL behavior notes:
+- `run_once_before_finalize.sh` skips `chsh` on WSL to avoid interactive prompts during `chezmoi apply`/`chezmoi update`.
+- To start in zsh automatically on WSL terminals, keep `exec zsh` in your `~/.bashrc`.
+
 ## Git identity prompt
 
 > [!IMPORTANT]
@@ -88,6 +92,11 @@ Version values live in `versions.env`:
 - `NODE_VERSION` (Node major line)
 - `PYTHON_VERSION` (Python line)
 - `NVM_INSTALL_VERSION` (nvm installer tag)
+
+Node version precedence note:
+- `nvm` follows the nearest `.nvmrc` from the current directory upward.
+- A home-level `~/.nvmrc` can override your default alias in home-shell sessions.
+- Recommended if you want global consistency with this repo: set `~/.nvmrc` to `22`.
 
 ### Bump versions
 

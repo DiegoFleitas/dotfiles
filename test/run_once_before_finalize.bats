@@ -25,3 +25,27 @@ setup() {
   run grep -F 'pyenv install --skip-existing "${PYTHON_VERSION}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
+
+@test "before_finalize runs in strict mode and has WSL guard for chsh" {
+  run grep -F 'set -euo pipefail' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'is_wsl() {' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'WSL detected. Skipping chsh to avoid interactive prompts.' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
+@test "before_finalize avoids implicit brew upgrades unless explicitly enabled" {
+  run grep -F 'if [ "${DOTFILES_BREW_UPGRADE:-0}" = "1" ]; then' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'Skipping brew upgrade by default (set DOTFILES_BREW_UPGRADE=1 to enable).' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
+@test "before_finalize updates oh-my-zsh without user shell rc side effects" {
+  run grep -F 'zsh -f -c' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
