@@ -7,6 +7,13 @@ output_message() {
   echo "===================================="
 }
 
+# Load centralized tool versions
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+[ -f "${SCRIPT_DIR}/versions.env" ] && . "${SCRIPT_DIR}/versions.env"
+: "${NODE_VERSION:=22}"
+: "${PYTHON_VERSION:=3.12}"
+
 # Ensure Zsh is installed before proceeding
 if ! command -v zsh &> /dev/null; then
   echo "Zsh is not installed."
@@ -43,7 +50,7 @@ if [ -f "$HOME/.nvm/nvm.sh" ]; then
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
   # shellcheck disable=SC1091
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-  nvm install 18 && nvm alias default 18
+  nvm install "${NODE_VERSION}" && nvm alias default "${NODE_VERSION}"
   if command -v corepack &>/dev/null; then
     output_message "Enabling Corepack (pnpm/yarn with Node)..."
     corepack enable
@@ -72,10 +79,8 @@ fi
 if command -v pyenv &> /dev/null; then
   output_message "Updating pyenv and Python versions..."
   brew upgrade pyenv
-  if pyenv versions | grep -q "3.10.9"; then
-    output_message "Updating Python 3.10.9..."
-    pyenv install --skip-existing 3.10.9
-  fi
+  output_message "Ensuring Python ${PYTHON_VERSION} is installed..."
+  pyenv install --skip-existing "${PYTHON_VERSION}"
 else
   output_message "pyenv not found. Skipping pyenv update."
 fi

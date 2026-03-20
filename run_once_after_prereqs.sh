@@ -10,6 +10,14 @@ output_message() {
     echo "======================================="
 }
 
+# Load centralized tool versions
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+[ -f "${SCRIPT_DIR}/versions.env" ] && . "${SCRIPT_DIR}/versions.env"
+: "${NODE_VERSION:=22}"
+: "${PYTHON_VERSION:=3.12}"
+: "${NVM_INSTALL_VERSION:=v0.40.3}"
+
 # Early return if root user (brew install errors out on root)
 if [ "$(id -u)" -eq 0 ]; then
    output_message "Rerun as non root."
@@ -64,7 +72,7 @@ eval "$($BREW_PATH/brew shellenv)"
 # Install nvm if not already installed
 if ! command -v nvm &> /dev/null; then
     output_message "Installing nvm..."
-    sh -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash"
+    sh -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_INSTALL_VERSION}/install.sh | bash"
 fi
 
 # Install brew packages
@@ -93,15 +101,15 @@ if ! command -v pyenv &> /dev/null; then
 fi
 
 # Setup python environment
-if ! pyenv versions | grep -q "3.10.9"; then
-    output_message "Installing Python 3.10.9..."
-    pyenv install 3.10.9
-    output_message "Setting global Python version to 3.10.9..."
-    pyenv global 3.10.9
+if ! pyenv versions | grep -q "${PYTHON_VERSION}"; then
+    output_message "Installing Python ${PYTHON_VERSION}..."
+    pyenv install "${PYTHON_VERSION}"
+    output_message "Setting global Python version to ${PYTHON_VERSION}..."
+    pyenv global "${PYTHON_VERSION}"
 fi
 
 if command -v python3 &> /dev/null; then
-    output_message "Python 3.10.9 installed successfully."
+    output_message "Python ${PYTHON_VERSION} installed successfully."
 else
     output_message "Python installation failed."
 fi
