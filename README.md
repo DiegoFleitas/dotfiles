@@ -5,6 +5,8 @@
 
 Personal Linux/macOS environment setup with [chezmoi](https://www.chezmoi.io/), shell scripts, and versioned configs.
 
+Quick links: [new machine](#tldr-new-machine) | [update current machine](#tldr-update-current-machine)
+
 ## TL;DR (new machine)
 
 1. Run:
@@ -144,3 +146,17 @@ Current test coverage:
 - `scripts/check-version-drift.sh` passes with valid repo state
 - `scripts/check-version-drift.sh` fails when `.nvmrc` and `versions.env` diverge
 - `run_once_after_prereqs.sh` and `run_once_before_finalize.sh` keep using centralized version variables
+
+## TL;DR (update current machine)
+
+From your home directory:
+
+```bash
+cd ~
+chezmoi update
+```
+
+Then open a new shell (or run `source ~/.profile`), and confirm tools:
+- `zsh --version`
+- `node -v`
+- `python --version`
