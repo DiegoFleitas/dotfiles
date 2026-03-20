@@ -1,3 +1,10 @@
+{{- $git := index . "git" -}}
+{{- $email := "" -}}
+{{- $name := "" -}}
+{{- if $git -}}
+  {{- $email = (index $git "email") -}}
+  {{- $name = (index $git "name") -}}
+{{- end -}}
 [user]
-	email = {{ .git.email | quote }}
-	name = {{ .git.name | quote }}
+	email = {{ $email | quote }}
+	name = {{ $name | quote }}

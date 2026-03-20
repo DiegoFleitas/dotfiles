@@ -6,8 +6,8 @@
 # Test execution is manual via ./scripts/test.sh (no automatic test hook configured here).
 # If this template changes, regenerate config with `chezmoi init DiegoFleitas`.
 
-{{- $gitName := promptStringOnce . "git.name" "Git user.name" -}}
-{{- $gitEmail := promptStringOnce . "git.email" "Git user.email" -}}
+{{ $gitName := promptStringOnce . "git.name" "Git user.name" }}
+{{ $gitEmail := promptStringOnce . "git.email" "Git user.email" }}
 
 [data]
 git = { name = {{ $gitName | quote }}, email = {{ $gitEmail | quote }} }
