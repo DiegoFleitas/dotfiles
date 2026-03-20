@@ -1,15 +1,22 @@
 # dotfiles
 
-Personal configuration files for Linux and macOS environments. Reproducible setup using [chezmoi](https://www.chezmoi.io/), shell scripts, and versioned configs.
+Personal Linux/macOS environment setup with [chezmoi](https://www.chezmoi.io/), shell scripts, and versioned configs.
 
-## What's included
+## TL;DR (new machine)
 
-- **Shell:** zsh with [oh-my-zsh](https://ohmyz.sh/)
-- **Dot configs:** `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
-- **Dev stack:** [nvm](https://github.com/nvm-sh/nvm) (Node 22, [Corepack](https://nodejs.org/api/corepack.html) enabled), [pyenv](https://github.com/pyenv/pyenv) (Python 3.12), [Homebrew](https://brew.sh/) + Brewfile (yarn, pnpm, [biome](https://biomejs.dev/) for JS/TS lint+format, awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), etc.). Shell auto-uses `.nvmrc` and auto-activates `.venv` in the current directory when present.
-- **Run scripts:** system deps and tool installs run automatically in order; optional `apps.sh` for extra apps (run manually after apply)
+1. Run:
+   ```bash
+   cd ~
+   sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas
+   ```
+2. Open a new shell (or run `source ~/.profile`)
+3. Confirm tools:
+   - `zsh --version`
+   - `node -v`
+   - `python --version`
+4. Optional: run `apps.sh` for extra apps (Docker, etc.)
 
-## Installation
+## Quick start
 
 From your home directory:
 
@@ -18,76 +25,95 @@ cd ~
 sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply DiegoFleitas
 ```
 
-Chezmoi will clone this repo and run, in order:
+After install, run `source ~/.profile` (or open a new shell).
 
-1. **run_once_after_prereqs.sh** — apt update/upgrade, build deps, Homebrew, nvm, oh-my-zsh, pyenv, Python 3.12
-2. **Dotfiles apply** — symlinks/copies for config files
-3. **run_once_before_finalize.sh** — default shell (zsh), brew/nvm/omz/pyenv updates
+## What you get
 
-Then run `source ~/.profile` (or open a new shell) to pick up changes.
+- `zsh` with [oh-my-zsh](https://ohmyz.sh/)
+- Dotfiles like `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
+- Dev tooling via:
+  - [nvm](https://github.com/nvm-sh/nvm) (Node 22) + [Corepack](https://nodejs.org/api/corepack.html)
+  - [pyenv](https://github.com/pyenv/pyenv) (Python 3.12)
+  - [Homebrew](https://brew.sh/) + Brewfile (yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
+- Shell behavior:
+  - Auto-use project `.nvmrc`
+  - Auto-activate local `.venv` when present
+- Setup scripts run in order; optional `apps.sh` stays manual
 
-## Trying them out
+## What happens during install
 
-### GitHub Codespaces
+`chezmoi init --apply` clones this repo and runs:
 
-**Quick try:** Open the [Codespaces blank template](https://github.com/github/codespaces-blank) and use **Code → Open on Codespaces** to spin up a Codespace. With dotfiles enabled in your [Codespaces settings](https://github.com/settings/codespaces) (see below), the new Codespace will use these configs.
+1. `run_once_after_prereqs.sh`
+   - apt update/upgrade, build deps, Homebrew, nvm, oh-my-zsh, pyenv, Python 3.12
+2. Dotfiles apply
+   - symlinks/copies for config files
+3. `run_once_before_finalize.sh`
+   - default shell (`zsh`), plus brew/nvm/omz/pyenv updates
 
-You can use this repo (or your fork) so every new Codespace gets these configs automatically:
+## Try it in Codespaces
 
-1. Open [GitHub Codespaces settings](https://github.com/settings/codespaces).
-2. Under **Dotfiles**, use the dropdown to select this repository (e.g. `DiegoFleitas/dotfiles` or your fork).
-3. Turn on **Automatically install dotfiles**.
-4. Create a new Codespace from any repo. Codespaces will clone this dotfiles repo and run `bootstrap.sh`, which runs the same chezmoi install as the snippet above.
+Quick test: open the [Codespaces blank template](https://github.com/github/codespaces-blank), then use **Code -> Open on Codespaces**.
 
-Changes to this repo only apply to **new** Codespaces; existing ones are unchanged.
+To apply these dotfiles to all new Codespaces:
 
-### New Ubuntu WSL2
+1. Open [GitHub Codespaces settings](https://github.com/settings/codespaces)
+2. Under **Dotfiles**, select this repo (for example `DiegoFleitas/dotfiles`) or your fork
+3. Turn on **Automatically install dotfiles**
+4. Create a new Codespace from any repo
 
-Install a distro, then run the install snippet above. Example:
+Codespaces clones this repo and runs `bootstrap.sh` (which triggers the same chezmoi install above).
 
-  ```powershell
-  wsl --install -d ubuntu
-  # To remove later: wsl --unregister ubuntu
-  ```
+Changes in this repo only affect **new** Codespaces.
 
-## Git config
+## Ubuntu WSL2 quick setup
+
+Install Ubuntu, then run the quick-start install command:
+
+```powershell
+wsl --install -d ubuntu
+# To remove later: wsl --unregister ubuntu
+```
+
+## Git identity prompt
 
 > [!IMPORTANT]
-> On first `chezmoi apply` you will be prompted for your git `user.name` and `user.email`; those values are cached. To change them later, run `chezmoi apply` again or edit `~/.config/chezmoi/chezmoi.toml`.
+> On first `chezmoi apply`, you will be prompted for git `user.name` and `user.email`. Those values are cached. To change them later, run `chezmoi apply` again or edit `~/.config/chezmoi/chezmoi.toml`.
 
-Remember to set your own name and email in the gitconfig when prompted.
+## Optional apps install
 
-## Optional: apps.sh
+Run `apps.sh` after setup to install extra applications (Docker, etc.) from `apps.conf`.
 
-After installation, you can run `apps.sh` to install extra applications (Docker, etc.) according to `apps.conf`. This is not run automatically by chezmoi.
+`apps.sh` is not run automatically by chezmoi.
 
 ## Compatibility
 
-Tested on **Ubuntu 22.04.5 LTS** and later. Best results on that version or newer.
+Tested on **Ubuntu 22.04.5 LTS** and newer.
 
 ## Version management
 
-Tool versions are centralized in `versions.env`. Update that file to change:
-- Node major line (`NODE_VERSION`)
-- Python version line (`PYTHON_VERSION`)
-- nvm installer tag (`NVM_INSTALL_VERSION`)
+Version values live in `versions.env`:
 
-### How to bump versions
+- `NODE_VERSION` (Node major line)
+- `PYTHON_VERSION` (Python line)
+- `NVM_INSTALL_VERSION` (nvm installer tag)
 
-1. Edit `versions.env` with the new values.
-2. Keep `.nvmrc` aligned with `NODE_VERSION`.
+### Bump versions
+
+1. Update `versions.env`
+2. Keep `.nvmrc` aligned with `NODE_VERSION`
 3. Run:
 
 ```bash
 bash scripts/check-version-drift.sh
 ```
 
-4. If the check passes, commit the version bump.
+4. If it passes, commit the version bump
 
-### Automation and drift protection
+### Drift protection
 
-- `scripts/check-version-drift.sh` enforces that scripts/docs use centralized version values.
-- `.github/workflows/version-drift.yml` runs the drift check on push, PR, and weekly schedule.
-- `.github/renovate.json` enables Renovate updates for:
+- `scripts/check-version-drift.sh` ensures scripts/docs use centralized values
+- `.github/workflows/version-drift.yml` runs checks on push, PR, and weekly
+- `.github/renovate.json` updates:
   - GitHub Actions versions
-  - `NVM_INSTALL_VERSION` in `versions.env` (via regex manager)
+  - `NVM_INSTALL_VERSION` in `versions.env` (regex manager)
