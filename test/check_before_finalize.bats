@@ -22,7 +22,13 @@ setup() {
   run grep -F 'nvm install "${NODE_VERSION}" && nvm alias default "${NODE_VERSION}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
-  run grep -F 'pyenv install --skip-existing "${PYTHON_VERSION}"' "${TARGET_FILE}"
+  run grep -F 'pyenv versions --bare | grep -Eq "^${PYTHON_VERSION}(\\.|$)"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'pyenv install "${PYTHON_VERSION}"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'DOTFILES_PYTHON_REFRESH' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
 
@@ -47,5 +53,10 @@ setup() {
 
 @test "before_finalize updates oh-my-zsh without user shell rc side effects" {
   run grep -F 'zsh -f -c' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
+@test "before_finalize includes canonical test runner hint" {
+  run grep -F 'tests: ./scripts/test.sh' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }

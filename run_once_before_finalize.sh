@@ -15,6 +15,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/versions.env" ] && . "${SCRIPT_DIR}/versions.env"
 : "${NODE_VERSION:=22}"
 : "${PYTHON_VERSION:=3.12}"
+: "${DOTFILES_PYTHON_REFRESH:=0}"
 
 is_wsl() {
   grep -qi microsoft /proc/version 2>/dev/null
@@ -100,10 +101,18 @@ fi
 if command -v pyenv &> /dev/null; then
   output_message "Updating pyenv and Python versions..."
   brew upgrade pyenv
-  output_message "Ensuring Python ${PYTHON_VERSION} is installed..."
-  pyenv install --skip-existing "${PYTHON_VERSION}"
+  if pyenv versions --bare | grep -Eq "^${PYTHON_VERSION}(\\.|$)"; then
+    output_message "Python ${PYTHON_VERSION}.x already present; skipping rebuild. Set DOTFILES_PYTHON_REFRESH=1 to force refresh."
+    if [ "${DOTFILES_PYTHON_REFRESH}" = "1" ]; then
+      output_message "DOTFILES_PYTHON_REFRESH=1, refreshing Python ${PYTHON_VERSION}..."
+      pyenv install "${PYTHON_VERSION}"
+    fi
+  else
+    output_message "No Python ${PYTHON_VERSION}.x found. Installing..."
+    pyenv install "${PYTHON_VERSION}"
+  fi
 else
   output_message "pyenv not found. Skipping pyenv update."
 fi
 
-output_message "Setup completed successfully! (You can run apps.sh now.)"
+output_message "Setup completed successfully! (You can run apps.sh now; tests: ./scripts/test.sh)"

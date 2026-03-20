@@ -98,6 +98,10 @@ Node version precedence note:
 - A home-level `~/.nvmrc` can override your default alias in home-shell sessions.
 - Recommended if you want global consistency with this repo: set `~/.nvmrc` to `22`.
 
+Python behavior note:
+- `run_once_before_finalize.sh` checks for any installed `PYTHON_VERSION.x` (for example `3.12.x`) and skips rebuilds on routine updates.
+- To force a Python refresh intentionally, run with `DOTFILES_PYTHON_REFRESH=1 chezmoi apply`.
+
 ### Bump versions
 
 1. Update `versions.env`
@@ -141,6 +145,22 @@ Current test coverage:
 - `scripts/check-version-drift.sh` passes with valid repo state
 - `scripts/check-version-drift.sh` fails when `.nvmrc` and `versions.env` diverge
 - `run_once_after_prereqs.sh` and `run_once_before_finalize.sh` keep using centralized version variables
+
+## Troubleshooting
+
+- Warning: `config file template has changed, run chezmoi init to regenerate config file`
+  - Run:
+    ```bash
+    cd ~
+    chezmoi init DiegoFleitas
+    chezmoi apply
+    ```
+- Stale/legacy test hook symptoms (for example `test/finalize.bats` or `/tmp/helpers/common.bash` errors)
+  - Regenerate config as above, then re-run:
+    ```bash
+    chezmoi update
+    ```
+  - Canonical test runner is `./scripts/test.sh` (or `bats test/` in repo root).
 
 ## TL;DR (update current machine)
 
