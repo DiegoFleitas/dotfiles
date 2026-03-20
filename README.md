@@ -113,7 +113,7 @@ bash scripts/check-version-drift.sh
 ### Drift protection
 
 - `scripts/check-version-drift.sh` ensures scripts/docs use centralized values
-- `.github/workflows/version-drift.yml` runs checks on push, PR, and weekly
+- `.github/workflows/version-drift.yml` runs checks on push, PR, and monthly
 - `.github/renovate.json` updates:
   - GitHub Actions versions
   - `NVM_INSTALL_VERSION` in `versions.env` (regex manager)
