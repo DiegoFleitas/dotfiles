@@ -28,3 +28,11 @@ setup() {
   run grep -F 'pyenv global "${PYTHON_VERSION}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
+
+@test "after_prereqs runs brew bundle (installs Brewfile packages e.g. php, composer)" {
+  run grep -F 'brew bundle --file="${HOME}/.local/share/chezmoi/Brewfile"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '|| brew bundle' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}

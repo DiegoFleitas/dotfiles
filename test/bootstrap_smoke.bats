@@ -7,6 +7,8 @@ setup() {
   TARGET_FILE="${REPO_ROOT}/bootstrap.sh"
   FINALIZE_FILE="${REPO_ROOT}/run_once_before_finalize.sh"
   TEST_RUNNER_FILE="${REPO_ROOT}/scripts/test.sh"
+  BREWFILE="${REPO_ROOT}/Brewfile"
+  CHEZMOI_TMPL="${REPO_ROOT}/.chezmoi.toml.tmpl"
 }
 
 @test "bootstrap script exists and uses chezmoi init apply" {
@@ -44,5 +46,22 @@ setup() {
 
 @test "canonical test runner remains scripts/test.sh to bats test" {
   run grep -F 'exec bats test/' "${TEST_RUNNER_FILE}"
+  [ "$status" -eq 0 ]
+}
+
+@test "Brewfile installs php and composer via Homebrew" {
+  [ -f "${BREWFILE}" ]
+
+  run grep -F 'brew "php"' "${BREWFILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'brew "composer"' "${BREWFILE}"
+  [ "$status" -eq 0 ]
+}
+
+@test "chezmoi template comments describe prereqs including php and composer" {
+  [ -f "${CHEZMOI_TMPL}" ]
+
+  run grep -F 'brew bundle (php, composer' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 }

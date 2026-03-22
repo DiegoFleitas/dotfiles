@@ -7,8 +7,8 @@ brew "wget"
 brew "gcc" # Recommended by Homebrew
 # brew "node" # should be handled by nvm
 brew "npm"
-# brew "php@8.0" # not using this stack
-# brew "composer"
+brew "php"
+brew "composer"
 brew "awscli"
 # Python tooling (pyenv + version from versions.env installed via run_once_after_prereqs.sh)
 brew "ruff"   # lint + format (replaces flake8, isort, black)
