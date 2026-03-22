@@ -25,7 +25,7 @@ After install, run `source ~/.profile` (or open a new shell).
 - Dev tooling via:
   - [nvm](https://github.com/nvm-sh/nvm) (Node 22) + [Corepack](https://nodejs.org/api/corepack.html)
   - [pyenv](https://github.com/pyenv/pyenv) (Python 3.12)
-  - [Homebrew](https://brew.sh/) + Brewfile (yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
+  - [Homebrew](https://brew.sh/) + Brewfile (PHP 8.5, Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
 - Shell behavior:
   - Auto-use project `.nvmrc`
   - Auto-activate local `.venv` when present
@@ -36,7 +36,7 @@ After install, run `source ~/.profile` (or open a new shell).
 `chezmoi init --apply` clones this repo and runs:
 
 1. `run_once_after_prereqs.sh`
-   - apt update/upgrade, build deps, Homebrew, nvm, oh-my-zsh, pyenv, Python 3.12
+   - apt update/upgrade, build deps, Homebrew, nvm, oh-my-zsh, pyenv, Python 3.12, PHP 8.5 (via Brewfile)
 2. Dotfiles apply
    - symlinks/copies for config files
 3. `run_once_before_finalize.sh`
@@ -91,6 +91,7 @@ Version values live in `versions.env`:
 
 - `NODE_VERSION` (Node major line)
 - `PYTHON_VERSION` (Python line)
+- `PHP_VERSION` (PHP major.minor line; Homebrew `php`)
 - `NVM_INSTALL_VERSION` (nvm installer tag)
 
 Node version precedence note:
@@ -104,8 +105,8 @@ Python behavior note:
 
 ### Bump versions
 
-1. Update `versions.env`
-2. Keep `.nvmrc` aligned with `NODE_VERSION`
+1. Update `versions.env` (`NODE_VERSION`, `PYTHON_VERSION`, `PHP_VERSION`, `NVM_INSTALL_VERSION` as needed)
+2. Keep `dot_nvmrc` aligned with `NODE_VERSION` (published as `~/.nvmrc`)
 3. Run:
 
 ```bash
@@ -143,7 +144,7 @@ CI:
 
 Current test coverage:
 - `scripts/check-version-drift.sh` passes with valid repo state
-- `scripts/check-version-drift.sh` fails when `.nvmrc` and `versions.env` diverge
+- `scripts/check-version-drift.sh` fails when `dot_nvmrc` and `versions.env` diverge
 - `run_once_after_prereqs.sh` and `run_once_before_finalize.sh` keep using centralized version variables
 
 ## Troubleshooting

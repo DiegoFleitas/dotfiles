@@ -14,6 +14,9 @@ setup() {
   run grep -F ': "${PYTHON_VERSION:=3.12}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
+  run grep -F ': "${PHP_VERSION:=8.5}"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
   run grep -F ': "${NVM_INSTALL_VERSION:=v0.40.3}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }

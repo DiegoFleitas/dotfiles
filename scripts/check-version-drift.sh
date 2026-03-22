@@ -17,6 +17,7 @@ DOT_NVMRC_FILE="${ROOT_DIR}/dot_nvmrc"
 . "${VERSIONS_FILE}"
 [ -n "${NODE_VERSION:-}" ] || fail "NODE_VERSION is missing in versions.env"
 [ -n "${PYTHON_VERSION:-}" ] || fail "PYTHON_VERSION is missing in versions.env"
+[ -n "${PHP_VERSION:-}" ] || fail "PHP_VERSION is missing in versions.env"
 [ -n "${NVM_INSTALL_VERSION:-}" ] || fail "NVM_INSTALL_VERSION is missing in versions.env"
 
 [ -f "${DOT_NVMRC_FILE}" ] || fail "missing dot_nvmrc at ${DOT_NVMRC_FILE}"
@@ -32,6 +33,8 @@ grep -q "NVM_INSTALL_VERSION" "${ROOT_DIR}/run_once_after_prereqs.sh" \
   || fail "run_once_after_prereqs.sh is not using NVM_INSTALL_VERSION"
 grep -q "PYTHON_VERSION" "${ROOT_DIR}/run_once_after_prereqs.sh" \
   || fail "run_once_after_prereqs.sh is not using PYTHON_VERSION"
+grep -q "PHP_VERSION" "${ROOT_DIR}/run_once_after_prereqs.sh" \
+  || fail "run_once_after_prereqs.sh is not using PHP_VERSION"
 grep -q "PYTHON_VERSION" "${ROOT_DIR}/run_once_before_finalize.sh" \
   || fail "run_once_before_finalize.sh is not using PYTHON_VERSION"
 
@@ -39,5 +42,7 @@ grep -q "Node ${NODE_VERSION}" "${ROOT_DIR}/README.md" \
   || fail "README.md does not mention Node ${NODE_VERSION}"
 grep -q "Python ${PYTHON_VERSION}" "${ROOT_DIR}/README.md" \
   || fail "README.md does not mention Python ${PYTHON_VERSION}"
+grep -q "PHP ${PHP_VERSION}" "${ROOT_DIR}/README.md" \
+  || fail "README.md does not mention PHP ${PHP_VERSION}"
 
 echo "Version drift check passed."

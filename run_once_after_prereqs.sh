@@ -16,6 +16,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "${SCRIPT_DIR}/versions.env" ] && . "${SCRIPT_DIR}/versions.env"
 : "${NODE_VERSION:=22}"
 : "${PYTHON_VERSION:=3.12}"
+: "${PHP_VERSION:=8.5}"
 : "${NVM_INSTALL_VERSION:=v0.40.3}"
 
 if [ "$(uname -s)" = "Linux" ] && command -v apt >/dev/null 2>&1; then
