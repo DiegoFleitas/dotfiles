@@ -93,8 +93,11 @@ elif [ -x "/usr/local/bin/brew" ]; then
 fi
 
 ### Development tools
-# Install nvm if not already installed
-if ! command -v nvm &> /dev/null; then
+# nvm is a shell function loaded from nvm.sh, not a PATH binary; in non-interactive
+# scripts (e.g. chezmoi) the usual executable lookup does not see it, so we test nvm.sh on disk.
+NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+export NVM_DIR
+if [ ! -s "$NVM_DIR/nvm.sh" ]; then
     output_message "Installing nvm..."
     sh -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_INSTALL_VERSION}/install.sh | bash"
 fi

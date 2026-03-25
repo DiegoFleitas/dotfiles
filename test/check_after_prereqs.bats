@@ -21,6 +21,17 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "after_prereqs installs nvm only when nvm.sh is missing on disk" {
+  run grep -F 'NVM_DIR="${NVM_DIR:-$HOME/.nvm}"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '[ ! -s "$NVM_DIR/nvm.sh" ]' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'command -v nvm' "${TARGET_FILE}"
+  [ "$status" -ne 0 ]
+}
+
 @test "after_prereqs uses centralized installer and python values" {
   run grep -F 'nvm-sh/nvm/${NVM_INSTALL_VERSION}/install.sh' "${TARGET_FILE}"
   [ "$status" -eq 0 ]

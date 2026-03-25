@@ -33,14 +33,14 @@ setup() {
 }
 
 @test "repo has no legacy finalize.bats or /tmp helper paths" {
-  run rg -n 'finalize\.bats|/tmp/helpers/common\.bash' \
+  run grep -nE 'finalize\.bats|/tmp/helpers/common\.bash' \
     "${REPO_ROOT}/.chezmoi.toml.tmpl" \
     "${REPO_ROOT}/run_once_after_prereqs.sh" \
     "${REPO_ROOT}/run_once_before_finalize.sh" \
     "${REPO_ROOT}/scripts/test.sh"
   [ "$status" -ne 0 ]
 
-  run rg -n '/tmp/helpers/common\.bash' "${REPO_ROOT}/test"
+  run grep -RnF '/tmp/helpers/common.bash' "${REPO_ROOT}/test"  --exclude=bootstrap_smoke.bats
   [ "$status" -ne 0 ]
 }
 
