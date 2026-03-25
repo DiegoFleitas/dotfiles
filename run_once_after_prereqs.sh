@@ -115,7 +115,9 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     # set zsh as default shell
     if grep -qi microsoft /proc/version; then
         # WSL detected - add to shell profile instead of chsh
-        echo "exec zsh" >> ~/.bashrc
+        if [ -f "$HOME/.bashrc" ] && ! grep -qxF "exec zsh" "$HOME/.bashrc"; then
+            echo "exec zsh" >> "$HOME/.bashrc"
+        fi
     else
         chsh -s "$(which zsh)"
     fi
