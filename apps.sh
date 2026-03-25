@@ -128,10 +128,10 @@ install_app() {
 
 toggle_selection() {
   local idx="$1" # 0-based
-  if [[ "${APP_SELECTED[$idx]}" == true ]]; then
-    APP_SELECTED[$idx]=false
+  if [[ "${APP_SELECTED[idx]}" == true ]]; then
+    APP_SELECTED[idx]=false
   else
-    APP_SELECTED[$idx]=true
+    APP_SELECTED[idx]=true
   fi
 }
 
@@ -167,12 +167,12 @@ run_picker() {
         ;;
       all)
         for idx in "${!APP_SELECTED[@]}"; do
-          APP_SELECTED[$idx]=true
+          APP_SELECTED[idx]=true
         done
         ;;
       none|clear)
         for idx in "${!APP_SELECTED[@]}"; do
-          APP_SELECTED[$idx]=false
+          APP_SELECTED[idx]=false
         done
         ;;
       "")
@@ -199,7 +199,7 @@ run_picker() {
 
 if [[ "$INSTALL_ALL" == true ]]; then
   for idx in "${!APP_SELECTED[@]}"; do
-    APP_SELECTED[$idx]=true
+    APP_SELECTED[idx]=true
   done
 else
   run_picker
