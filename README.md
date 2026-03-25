@@ -81,6 +81,31 @@ Run `apps.sh` after setup to install extra applications (Docker, etc.) from `app
 
 `apps.sh` is not run automatically by chezmoi.
 
+Usage:
+
+```bash
+./apps.sh
+```
+
+Interactive picker controls (multi-select; default is none selected):
+- Toggle selection by number(s): `1 3 5`
+- Select all: `all`
+- Clear all: `none`
+- Start install: `done`
+- Exit without installing: `q`
+
+Non-interactive (install everything):
+
+```bash
+./apps.sh -y
+```
+
+Dry-run (prints what would be installed; does not run installs):
+
+```bash
+./apps.sh --dry-run
+```
+
 ## Compatibility
 
 Tested on **Ubuntu 22.04.5 LTS** and newer.
