@@ -31,9 +31,9 @@ grep -q "nvm install \"\\\${NODE_VERSION}\"" "${ROOT_DIR}/run_once_before_finali
   || fail "run_once_before_finalize.sh is not using NODE_VERSION for install"
 grep -q "NVM_INSTALL_VERSION" "${ROOT_DIR}/run_once_after_prereqs.sh" \
   || fail "run_once_after_prereqs.sh is not using NVM_INSTALL_VERSION"
-grep -Fq 'NVM_DIR="${NVM_DIR:-$HOME/.nvm}"' "${ROOT_DIR}/run_once_after_prereqs.sh" \
+grep -Fq "NVM_DIR=\"\${NVM_DIR:-\$HOME/.nvm}\"" "${ROOT_DIR}/run_once_after_prereqs.sh" \
   || fail "run_once_after_prereqs.sh should set NVM_DIR before checking nvm.sh"
-grep -Fq '[ ! -s "$NVM_DIR/nvm.sh" ]' "${ROOT_DIR}/run_once_after_prereqs.sh" \
+grep -Fq "[ ! -s \"\$NVM_DIR/nvm.sh\" ]" "${ROOT_DIR}/run_once_after_prereqs.sh" \
   || fail "run_once_after_prereqs.sh should install nvm when nvm.sh is missing (not command -v nvm)"
 grep -q "PYTHON_VERSION" "${ROOT_DIR}/run_once_after_prereqs.sh" \
   || fail "run_once_after_prereqs.sh is not using PYTHON_VERSION"
