@@ -52,3 +52,36 @@ teardown() {
   restore_file "${VERSIONS_ENV_BACKUP}" "${versions_env}"
   VERSIONS_ENV_BACKUP=""
 }
+
+@test "version drift check fails when dot_nvmrc is empty/whitespace" {
+  local dot_nvmrc="${REPO_ROOT}/dot_nvmrc"
+  DOT_NVMRC_BACKUP="$(mktemp)"
+
+  backup_file "${dot_nvmrc}" "${DOT_NVMRC_BACKUP}"
+  printf '%s\n' "   " > "${dot_nvmrc}"
+
+  run bash "${REPO_ROOT}/scripts/check-version-drift.sh"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"dot_nvmrc is empty"* ]]
+
+  restore_file "${DOT_NVMRC_BACKUP}" "${dot_nvmrc}"
+  DOT_NVMRC_BACKUP=""
+}
+
+@test "version drift check fails when versions.env is missing required keys" {
+  local versions_env="${REPO_ROOT}/versions.env"
+  VERSIONS_ENV_BACKUP="$(mktemp)"
+
+  backup_file "${versions_env}" "${VERSIONS_ENV_BACKUP}"
+
+  # Remove a required key (keep file present to hit the specific error).
+  # Use grep -v to avoid relying on sed -i portability.
+  grep -v '^PHP_VERSION=' "${VERSIONS_ENV_BACKUP}" > "${versions_env}"
+
+  run bash "${REPO_ROOT}/scripts/check-version-drift.sh"
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"PHP_VERSION is missing in versions.env"* ]]
+
+  restore_file "${VERSIONS_ENV_BACKUP}" "${versions_env}"
+  VERSIONS_ENV_BACKUP=""
+}
