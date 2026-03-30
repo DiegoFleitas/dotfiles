@@ -428,3 +428,83 @@ exit 98
   run /bin/grep -F "chsh -s" "${CALL_LOG}"
   [ "$status" -eq 0 ]
 }
+
+@test "after_prereqs installs flyctl when DOTFILES_INSTALL_FLYCTL=1 and CLI absent" {
+  mkdir -p "${HOME}/.oh-my-zsh"
+
+  write_stub "uname" '#!/usr/bin/bash
+echo "Linux"
+'
+
+  write_stub "dirname" '#!/usr/bin/bash
+path="${1:-}"
+path="${path%/}"
+if [[ "${path}" != *"/"* ]]; then
+  echo "."
+else
+  echo "${path%/*}"
+fi
+'
+
+  write_stub "id" '#!/usr/bin/bash
+if [ "${1:-}" = "-u" ]; then
+  echo 1000
+  exit 0
+fi
+echo 1000
+'
+
+  write_stub "git" '#!/usr/bin/bash
+exit 0
+'
+  write_stub "curl" '#!/usr/bin/bash
+exit 0
+'
+
+  write_stub "brew" '#!/usr/bin/bash
+echo "brew $*" >>"$CALL_LOG"
+case "${1:-}" in
+  shellenv) exit 0 ;;
+  bundle) exit 0 ;;
+  install) exit 0 ;;
+esac
+exit 0
+'
+  write_stub "pyenv" '#!/usr/bin/bash
+echo "pyenv $*" >>"$CALL_LOG"
+if [ "${1:-}" = "versions" ]; then
+  printf "%s\n" "* 3.12.0 (set by stub)"
+  exit 0
+fi
+exit 0
+'
+  write_stub "python3" '#!/usr/bin/bash
+exit 0
+'
+  write_stub "grep" '#!/usr/bin/bash
+if [ "${1:-}" = "-q" ] && [ -n "${2:-}" ]; then
+  if [ "${2:-}" = "3.12" ]; then
+    exit 0
+  fi
+fi
+exit 1
+'
+  write_stub "chsh" '#!/usr/bin/bash
+exit 0
+'
+  write_stub "wget" '#!/usr/bin/bash
+exit 0
+'
+  write_stub "zsh" '#!/usr/bin/bash
+exit 0
+'
+  write_stub "sudo" '#!/usr/bin/bash
+exit 98
+'
+
+  run /usr/bin/env PATH="${BIN_DIR}" DOTFILES_INSTALL_FLYCTL=1 /usr/bin/bash "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run /bin/grep -F "brew install flyctl" "${CALL_LOG}"
+  [ "$status" -eq 0 ]
+}

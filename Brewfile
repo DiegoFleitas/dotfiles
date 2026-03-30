@@ -10,6 +10,8 @@ brew "npm"
 brew "php"
 brew "composer"
 brew "awscli"
+# JavaScript runtime
+brew "bun"
 # Python tooling (pyenv + version from versions.env installed via run_once_after_prereqs.sh)
 brew "ruff"   # lint + format (replaces flake8, isort, black)
 brew "uv"     # fast pip/venv (optional: uv venv, uv pip install)
@@ -19,3 +21,4 @@ brew "uv"     # fast pip/venv (optional: uv venv, uv pip install)
 # ... tools like slack, zoom, teams ...
 # cask "google-chrome"
 # cask "visual-studio-code"
+brew "jq"

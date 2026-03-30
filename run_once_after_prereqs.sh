@@ -107,6 +107,20 @@ output_message "Installing brew packages..."
 # Use Brewfile from chezmoi directory or fall back to this one
 brew bundle --file="${HOME}/.local/share/chezmoi/Brewfile" 2>/dev/null || brew bundle
 
+# Optional Fly.io CLI (left out of default Brewfile)
+if [ "${DOTFILES_INSTALL_FLYCTL:-0}" = "1" ]; then
+  if command -v brew &>/dev/null; then
+    if command -v fly &>/dev/null || command -v flyctl &>/dev/null; then
+      output_message "Fly CLI already installed; skipping flyctl."
+    else
+      output_message "DOTFILES_INSTALL_FLYCTL=1, installing flyctl..."
+      brew install flyctl
+    fi
+  else
+    output_message "DOTFILES_INSTALL_FLYCTL=1 but brew not found; skipping flyctl."
+  fi
+fi
+
 # Install oh-my-zsh if not already installed
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     output_message "Installing oh-my-zsh..."
