@@ -50,14 +50,17 @@ setup() {
   [ "$status" -ne 0 ]
 }
 
-@test "README lists apps.sh installer types and Brewfile for Bun" {
+@test "README lists apps.sh installer types and documents Bun outside apps.sh" {
   run grep -F '**apt**, **deb**, **snap**, **repo**, and **ppa**' "${README}"
   [ "$status" -eq 0 ]
 
   run grep -F '**Brewfile**' "${README}"
   [ "$status" -eq 0 ]
 
-  run grep -F '**Bun**' "${README}"
+  run grep -F 'not installed by `apps.sh`' "${README}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'curl installer (not the Brewfile)' "${README}"
   [ "$status" -eq 0 ]
 }
 

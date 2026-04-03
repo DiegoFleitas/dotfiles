@@ -80,7 +80,7 @@ WSL behavior notes:
 
 Run `apps.sh` after setup to install extra applications (Docker, etc.) from `apps.conf`.
 
-`apps.sh` is not run automatically by chezmoi. It only supports **apt**, **deb**, **snap**, **repo**, and **ppa** installs — not Homebrew formulae. Tools such as **Bun** come from the **Brewfile** via `brew bundle` during dotfiles setup.
+`apps.sh` is run manually and installs applications from `apps.conf` using system-level installers common on Debian/Ubuntu: apt, `.deb` packages, snap, apt repositories, and PPAs. Homebrew-managed developer tools are provisioned from the `Brewfile` (applied during `run_once_after_prereqs.sh` with `brew bundle`). `Bun` is installed earlier in `run_once_after_prereqs.sh` using the official curl installer; other developer tooling comes from the `Brewfile`.
 
 **Fly.io CLI** is optional. Install during `chezmoi apply` with `DOTFILES_INSTALL_FLYCTL=1` (for example `DOTFILES_INSTALL_FLYCTL=1 chezmoi apply`), or run `brew install flyctl` after setup.
 

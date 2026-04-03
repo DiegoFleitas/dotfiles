@@ -10,6 +10,8 @@ setup() {
   BREWFILE="${REPO_ROOT}/Brewfile"
   CHEZMOI_TMPL="${REPO_ROOT}/.chezmoi.toml.tmpl"
   DOT_PROFILE="${REPO_ROOT}/dot_profile"
+  DOT_ZSHRC="${REPO_ROOT}/dot_zshrc"
+  DOT_BASHRC="${REPO_ROOT}/dot_bashrc"
 }
 
 @test "bootstrap script exists and uses chezmoi init apply" {
@@ -73,12 +75,14 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
-@test "dot_profile wires bun PATH and BUN_INSTALL" {
-  [ -f "${DOT_PROFILE}" ]
+@test "dot_profile dot_zshrc and dot_bashrc wire bun PATH and BUN_INSTALL" {
+  for f in "${DOT_PROFILE}" "${DOT_ZSHRC}" "${DOT_BASHRC}"; do
+    [ -f "${f}" ]
 
-  run grep -F 'BUN_INSTALL' "${DOT_PROFILE}"
-  [ "$status" -eq 0 ]
+    run grep -F 'BUN_INSTALL' "${f}"
+    [ "$status" -eq 0 ]
 
-  run grep -F '# bun (https://bun.com)' "${DOT_PROFILE}"
-  [ "$status" -eq 0 ]
+    run grep -F '# bun (https://bun.com)' "${f}"
+    [ "$status" -eq 0 ]
+  done
 }
