@@ -51,16 +51,13 @@ setup() {
 }
 
 @test "README lists apps.sh installer types and documents Bun outside apps.sh" {
-  run grep -F '**apt**, **deb**, **snap**, **repo**, and **ppa**' "${README}"
+  run grep -F 'apt repositories, and PPAs' "${README}"
   [ "$status" -eq 0 ]
 
-  run grep -F '**Brewfile**' "${README}"
+  run grep -F 'provisioned from the `Brewfile`' "${README}"
   [ "$status" -eq 0 ]
 
-  run grep -F 'not installed by `apps.sh`' "${README}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'curl installer (not the Brewfile)' "${README}"
+  run grep -F '`Bun` is installed earlier in `run_once_after_prereqs.sh` using the official curl installer' "${README}"
   [ "$status" -eq 0 ]
 }
 
