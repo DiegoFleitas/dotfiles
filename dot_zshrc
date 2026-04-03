@@ -103,6 +103,10 @@ source $ZSH/oh-my-zsh.sh
 # Homebrew
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
+# bun (https://bun.com)
+export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
+case ":${PATH}:" in *":${BUN_INSTALL}/bin:"*) ;; *) PATH="${BUN_INSTALL}/bin:${PATH}" ;; esac
+
 # NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm

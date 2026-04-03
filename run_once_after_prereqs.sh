@@ -102,6 +102,14 @@ if [ ! -s "$NVM_DIR/nvm.sh" ]; then
     sh -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_INSTALL_VERSION}/install.sh | bash"
 fi
 
+# Bun (official installer; separate from nvm-managed Node)
+BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
+export BUN_INSTALL
+if [ ! -x "$BUN_INSTALL/bin/bun" ]; then
+    output_message "Installing bun..."
+    curl -fsSL https://bun.com/install | bash
+fi
+
 # Install brew packages
 output_message "Installing brew packages..."
 # Use Brewfile from chezmoi directory or fall back to this one

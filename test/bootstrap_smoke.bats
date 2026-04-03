@@ -9,6 +9,7 @@ setup() {
   TEST_RUNNER_FILE="${REPO_ROOT}/scripts/test.sh"
   BREWFILE="${REPO_ROOT}/Brewfile"
   CHEZMOI_TMPL="${REPO_ROOT}/.chezmoi.toml.tmpl"
+  DOT_PROFILE="${REPO_ROOT}/dot_profile"
 }
 
 @test "bootstrap script exists and uses chezmoi init apply" {
@@ -49,7 +50,7 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
-@test "Brewfile installs php and composer via Homebrew" {
+@test "Brewfile installs php and composer via Homebrew but not bun" {
   [ -f "${BREWFILE}" ]
 
   run grep -F 'brew "php"' "${BREWFILE}"
@@ -57,11 +58,27 @@ setup() {
 
   run grep -F 'brew "composer"' "${BREWFILE}"
   [ "$status" -eq 0 ]
+
+  run grep -F 'brew "bun"' "${BREWFILE}"
+  [ "$status" -ne 0 ]
 }
 
-@test "chezmoi template comments describe prereqs including php and composer" {
+@test "chezmoi template separates brew bundle from bun curl installer" {
   [ -f "${CHEZMOI_TMPL}" ]
 
   run grep -F 'brew bundle (php, composer' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'bun (curl installer)' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+}
+
+@test "dot_profile wires bun PATH and BUN_INSTALL" {
+  [ -f "${DOT_PROFILE}" ]
+
+  run grep -F 'BUN_INSTALL' "${DOT_PROFILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '# bun (https://bun.com)' "${DOT_PROFILE}"
   [ "$status" -eq 0 ]
 }

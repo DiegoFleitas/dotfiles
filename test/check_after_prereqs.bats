@@ -43,6 +43,16 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "after_prereqs installs bun via official curl installer when missing" {
+  run grep -F 'curl -fsSL https://bun.com/install | bash' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
+@test "after_prereqs installs bun only when bun binary is missing" {
+  run grep -F '[ ! -x "$BUN_INSTALL/bin/bun" ]' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
 @test "after_prereqs runs brew bundle (installs Brewfile packages e.g. php, composer)" {
   run grep -F 'brew bundle --file="${HOME}/.local/share/chezmoi/Brewfile"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]

@@ -25,6 +25,7 @@ After install, run `source ~/.profile` (or open a new shell).
 - Dev tooling via:
   - [nvm](https://github.com/nvm-sh/nvm) (Node 22) + [Corepack](https://nodejs.org/api/corepack.html)
   - [pyenv](https://github.com/pyenv/pyenv) (Python 3.12)
+  - [Bun](https://bun.com) — official install script in `run_once_after_prereqs.sh` (not Homebrew)
   - [Homebrew](https://brew.sh/) + Brewfile (PHP 8.5, Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
 - Shell behavior:
   - Auto-use project `.nvmrc`
@@ -36,7 +37,7 @@ After install, run `source ~/.profile` (or open a new shell).
 `chezmoi init --apply` clones this repo and runs:
 
 1. `run_once_after_prereqs.sh`
-   - apt update/upgrade, build deps, Homebrew, nvm, oh-my-zsh, pyenv, Python 3.12, PHP 8.5 (via Brewfile)
+   - apt update/upgrade, build deps, Homebrew, nvm, Bun (curl installer), oh-my-zsh, pyenv, Python 3.12, PHP 8.5 (via Brewfile)
 2. Dotfiles apply
    - symlinks/copies for config files
 3. `run_once_before_finalize.sh`
