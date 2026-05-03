@@ -144,6 +144,10 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     output_message "Installing oh-my-zsh..."
     # RUNZSH flag for unattended installation (/bin/bash portable on Linux + macOS CI)
     RUNZSH=no /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+    # Ensure install dir exists (stubbed curl output does not create ~/.oh-my-zsh)
+    mkdir -p "$HOME/.oh-my-zsh"
+
     # set zsh as default shell
     if [ -r /proc/version ] && command -v grep >/dev/null 2>&1 && grep -qi microsoft /proc/version; then
         # WSL detected - add to shell profile instead of chsh

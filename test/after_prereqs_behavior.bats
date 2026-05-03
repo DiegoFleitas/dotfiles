@@ -318,14 +318,14 @@ exit 98
   [[ "$output" == *"OMZ_INSTALLER_RAN"* ]]
 
   # WSL path should append exec zsh exactly once.
-  # Use /bin/grep (not PATH-resolved grep) because this test stubs `grep`
+  # Use /usr/bin/grep (not PATH-resolved grep) because this test stubs `grep`
   # for WSL detection + idempotency guard behavior.
-  run /bin/grep -nFx "exec zsh" "${HOME}/.bashrc"
+  run /usr/bin/grep -nFx "exec zsh" "${HOME}/.bashrc"
   [ "$status" -eq 0 ]
 
   # WSL branch should not chsh.
-  # Use /bin/grep to keep assertions independent of our stubs.
-  run /bin/grep -F "chsh " "${CALL_LOG}"
+  # Use /usr/bin/grep to keep assertions independent of our stubs.
+  run /usr/bin/grep -F "chsh " "${CALL_LOG}"
   [ "$status" -ne 0 ]
 }
 
@@ -437,9 +437,9 @@ exit 98
   [[ "$output" == *"Installing oh-my-zsh..."* ]]
   [[ "$output" == *"OMZ_INSTALLER_RAN"* ]]
 
-  # Use /bin/grep (not PATH-resolved grep) because this test stubs `grep`
+  # Use /usr/bin/grep (not PATH-resolved grep) because this test stubs `grep`
   # to force non-WSL behavior.
-  run /bin/grep -F "chsh -s" "${CALL_LOG}"
+  run /usr/bin/grep -F "chsh -s" "${CALL_LOG}"
   [ "$status" -eq 0 ]
 }
 
@@ -520,6 +520,6 @@ exit 98
   dotfiles_run_script_clean "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
-  run /bin/grep -F "brew install flyctl" "${CALL_LOG}"
+  run /usr/bin/grep -F "brew install flyctl" "${CALL_LOG}"
   [ "$status" -eq 0 ]
 }
