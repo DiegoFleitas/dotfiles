@@ -167,7 +167,13 @@ bash scripts/check-version-drift.sh
 
 ## Testing
 
-Shell tests use [bats-core](https://github.com/bats-core/bats-core).
+Shell tests use [bats-core](https://github.com/bats-core/bats-core). Behavioral checks for `run_once_*.sh` also run under **pytest** (`test_python/`) with explicit subprocess env/timeouts.
+
+Install dev deps once:
+
+```bash
+pip install -r requirements-dev.txt
+```
 
 Run locally:
 
@@ -175,21 +181,18 @@ Run locally:
 ./scripts/test.sh
 ```
 
-Direct command (if `bats` is already installed):
+Direct commands (if tools are already installed):
 
 ```bash
-bats test/
+bats --jobs 1 test/
+python3 -m pytest test_python/
 ```
 
-CI:
-- `.github/workflows/test.yml` installs Bats and runs `bats test/` on push and pull request events
+CI runs `./scripts/test.sh` on Ubuntu and macOS (see `.github/workflows/test.yml`).
 
-Current test coverage (see `bats test/`):
-- `scripts/check-version-drift.sh` passes with valid repo state; fails on `dot_nvmrc` / `versions.env` drift
-- Grep-based contracts for `run_once_*.sh` (strict mode, version variables, brew bundle, optional flyctl)
-- `test/after_prereqs_behavior.bats` exercises stubbed `run_once_after_prereqs.sh` paths
-- `apps.sh` / `apps.conf` invariants and dry-run safety
-- `dot_gitconfig.tmpl` and shell config expectations (portable Homebrew, no hardcoded Linuxbrew-only `shellenv`)
+All `*.bats` files under [`test/`](test/) drive validation. They cover, among other themes: version drift (`scripts/check-version-drift.sh`), stub-based provisioning script behavior, `apps.sh` / picker flows, Brewfile and `apps.conf` contracts, idempotency guards, and template/shell-config sanity. Browse `test/` for the current suites rather than duplicating an inventory here.
+
+If a Bats test **hangs** or a stub test **fails in odd ways** (e.g. missing `CALL_LOG` lines), read the short “footguns” note at the top of [`test/helpers/common.bash`](test/helpers/common.bash) (stub shebangs, `grep` on `PATH`, env forwarding—run a single file with `timeout 60 bats test/some.bats` while debugging).
 
 ## Troubleshooting
 
@@ -205,7 +208,7 @@ Current test coverage (see `bats test/`):
     ```bash
     chezmoi update
     ```
-  - Canonical test runner is `./scripts/test.sh` (or `bats test/` in repo root).
+  - Canonical test runner is `./scripts/test.sh` (or `bats --jobs 1 test/` in repo root).
 
 ## TL;DR (update current machine)
 
