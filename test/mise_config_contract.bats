@@ -15,7 +15,7 @@ setup() {
   [ "$status" -eq 0 ]
   run grep -E '^python[[:space:]]*=' "${f}"
   [ "$status" -eq 0 ]
-  run grep -E '^php[[:space:]]*=' "${f}"
+  run grep -E '^("ubi:adwinying/php"|php)[[:space:]]*=' "${f}"
   [ "$status" -eq 0 ]
 }
 
@@ -25,6 +25,6 @@ setup() {
   [ "$status" -eq 0 ]
   run grep -E '^python[[:space:]]*=[[:space:]]*"[0-9.]+"' "${f}"
   [ "$status" -eq 0 ]
-  run grep -E '^php[[:space:]]*=[[:space:]]*"[0-9.]+"' "${f}"
+  run grep -E '^("ubi:adwinying/php"|php)[[:space:]]*=[[:space:]]*"[0-9.]+"' "${f}"
   [ "$status" -eq 0 ]
 }

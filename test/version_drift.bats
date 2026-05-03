@@ -31,7 +31,7 @@ teardown() {
   local node_pin python_pin php_pin
   node_pin="$(grep -E '^node[[:space:]]*=' "${dot_mise}" | sed -E 's/^node[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/')"
   python_pin="$(grep -E '^python[[:space:]]*=' "${dot_mise}" | sed -E 's/^python[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/')"
-  php_pin="$(grep -E '^php[[:space:]]*=' "${dot_mise}" | sed -E 's/^php[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/')"
+  php_pin="$(grep -E '^("ubi:adwinying/php"|php)[[:space:]]*=' "${dot_mise}" | sed -E 's/^[^=]*=[[:space:]]*"([^"]+)".*/\1/')"
   run grep -Fq "Node ${node_pin}" "${REPO_ROOT}/README.md"
   [ "$status" -eq 0 ]
   run grep -Fq "Python ${python_pin}" "${REPO_ROOT}/README.md"
@@ -61,8 +61,8 @@ teardown() {
   DOT_MISE_BACKUP="$(mktemp)"
   backup_file "${dot_mise}" "${DOT_MISE_BACKUP}"
 
-  grep -v '^php[[:space:]]*=' "${DOT_MISE_BACKUP}" > "${dot_mise}"
-  run grep -E '^php[[:space:]]*=' "${dot_mise}"
+  grep -vE '^("ubi:adwinying/php"|php)[[:space:]]*=' "${DOT_MISE_BACKUP}" > "${dot_mise}"
+  run grep -E '^("ubi:adwinying/php"|php)[[:space:]]*=' "${dot_mise}"
   [ "$status" -ne 0 ]
 
   restore_file "${DOT_MISE_BACKUP}" "${dot_mise}"

@@ -46,28 +46,30 @@ if [ "${HAS_APT}" -eq 1 ]; then
       wget \
       zsh
 
-    # mise / asdf-php: compiles PHP (e.g. 8.4.x) from source. Global flags use libxml, gd, intl,
-    # pdo_pgsql, zip, onig, etc. Linux branch also passes --with-gettext; buildconf wants autotools;
-    # plocate fixes `locate` (used to find libjpeg/libpng paths). ext/sodium needs libsodium-dev.
-    # https://github.com/asdf-community/asdf-php/issues/202
-    output_message "Installing apt dependencies for PHP source builds (mise / asdf-php)..."
-    sudo apt install -y \
-      autoconf \
-      automake \
-      libtool \
-      pkg-config \
-      bison \
-      re2c \
-      gettext \
-      plocate \
-      libxml2-dev \
-      libcurl4-openssl-dev \
-      libgd-dev \
-      libicu-dev \
-      libonig-dev \
-      libpq-dev \
-      libsodium-dev \
-      libzip-dev
+    # Plain `php = "…"` in dot_mise.toml → asdf-php compiles from source (not ubi prebuilds).
+    # Packages match asdf-php default ./configure (libxml, gd, intl, pdo_pgsql, zip, onig, …),
+    # buildconf (autoconf/automake/libtool), bison/re2c, gettext, plocate (plugin uses locate on Linux),
+    # libsodium (ext/sodium). See https://github.com/asdf-community/asdf-php/issues/202
+    if grep -qE '^[[:space:]]*php[[:space:]]*=' "${REPO_ROOT}/dot_mise.toml" 2>/dev/null; then
+      output_message "Installing apt dependencies for PHP source builds (mise / asdf-php)..."
+      sudo apt install -y \
+        autoconf \
+        automake \
+        libtool \
+        pkg-config \
+        bison \
+        re2c \
+        gettext \
+        plocate \
+        libxml2-dev \
+        libcurl4-openssl-dev \
+        libgd-dev \
+        libicu-dev \
+        libonig-dev \
+        libpq-dev \
+        libsodium-dev \
+        libzip-dev
+    fi
 else
     output_message "apt not available. Skipping apt dependency setup."
 fi

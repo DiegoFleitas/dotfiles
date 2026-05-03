@@ -8,7 +8,7 @@
 [![mise](https://img.shields.io/badge/mise-tool%20versions-000000?logo=mise&logoColor=white&style=flat-square)](https://mise.jdx.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white&style=flat-square)](https://nodejs.org/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white&style=flat-square)](https://www.python.org/)
-[![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white&style=flat-square)](https://www.php.net/)
+[![PHP](https://img.shields.io/badge/PHP-8.4.20-777BB4?logo=php&logoColor=white&style=flat-square)](https://www.php.net/)
 [![Bun](https://img.shields.io/badge/Bun-runtime-000000?logo=bun&logoColor=white&style=flat-square)](https://bun.com/)
 [![Homebrew](https://img.shields.io/badge/Homebrew-packages-FBB040?logo=homebrew&logoColor=black&style=flat-square)](https://brew.sh/)
 
@@ -35,7 +35,7 @@ New shell or `source ~/.profile`.
 ## What’s in the box
 
 - **Shell:** `zsh` + [oh-my-zsh](https://ohmyz.sh/); dotfiles (`.bashrc`, `.zshrc`, `.profile`, templated `.gitconfig`).
-- **Tooling:** [mise](https://mise.jdx.dev/) pins **Node 22**, **Python 3.12**, **PHP 8.4** in [`dot_mise.toml`](dot_mise.toml) → `~/.mise.toml`; [Bun](https://bun.com) via curl in `run_once_after_prereqs.sh`; [Homebrew](https://brew.sh/) + Brewfile (mise, Composer, yarn, pnpm, biome, awscli, ruff, uv, …). [Corepack](https://nodejs.org/api/corepack.html) in `run_once_before_finalize.sh`.
+- **Tooling:** [mise](https://mise.jdx.dev/) pins **Node 22**, **Python 3.12**, **PHP 8.4.20** ([`ubi:adwinying/php`](https://github.com/adwinying/php) prebuilt in [`dot_mise.toml`](dot_mise.toml)) → `~/.mise.toml`; [Bun](https://bun.com) via curl in `run_once_after_prereqs.sh`; [Homebrew](https://brew.sh/) + Brewfile (mise, Composer, yarn, pnpm, biome, awscli, ruff, uv, …). [Corepack](https://nodejs.org/api/corepack.html) in `run_once_before_finalize.sh`.
 - **Behavior:** mise after `brew shellenv`; repo [`dot_nvmrc`](dot_nvmrc) → `~/.nvmrc`; walk-up `.venv` activation.
 
 ## Install order
@@ -91,13 +91,13 @@ Picker: numbers toggle, `all` / `none`, `done` to run, `q` to quit.
 
 ## Versions & bumps
 
-Single source: **`dot_mise.toml`** (pins **Node 22**, **Python 3.12**, **PHP 8.4**). Keep **`dot_nvmrc`** in sync with the `node = "…"` line. Force Python reinstall: `DOTFILES_PYTHON_REFRESH=1 chezmoi apply`.
+Single source: **`dot_mise.toml`** (pins **Node 22**, **Python 3.12**, **PHP 8.4.20** via **`ubi:adwinying/php`**). Keep **`dot_nvmrc`** in sync with the `node = "…"` line. Force Python reinstall: `DOTFILES_PYTHON_REFRESH=1 chezmoi apply`.
 
 **Bump:** edit `dot_mise.toml` → `dot_nvmrc` if Node changed → README + Shields labels → `./scripts/test.sh` → commit.
 
 **Drift:** `test/mise_config_contract.bats`, `test/version_drift.bats`, workflow `version-drift.yml`, Renovate on Actions.
 
-**PHP (Linux/WSL):** mise builds PHP from source; `install/mise_install_env.sh` sets conservative `MAKEFLAGS` / `ASDF_CONCURRENCY`. If linking fails, raise VM/WSL RAM, try `MISE_VERBOSE=1 mise install -y`, or point `TMPDIR` at a roomy disk.
+**PHP:** Default pin is **[`ubi:adwinying/php`](https://github.com/adwinying/php)** (prebuilt via mise). Bump the version in **`dot_mise.toml`**; list builds with **`mise ls-remote ubi:adwinying/php`**. If you switch to plain **`php = "…"`** (asdf-php source install), **`install/after_prereqs.sh`** installs the **PHP compile apt bundle** automatically when it sees that line; **`install/mise_install_env.sh`** still tunes **`MAKEFLAGS`**, **`TMPDIR`** on WSL, and GNU **`ld`** for those builds.
 
 ## Testing
 

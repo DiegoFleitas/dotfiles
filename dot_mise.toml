@@ -1,6 +1,9 @@
 # Single source of truth for Node, Python, and PHP (managed by mise).
 # https://mise.jdx.dev/configuration.html
+#
+# PHP: prebuilt "ubi:adwinying/php" avoids compiling php-src on Linux/WSL (OOM-prone final link).
+# To use source builds instead, replace with: php = "8.4.x" (asdf-php) and keep after_prereqs apt PHP deps.
 [tools]
 node = "22"
 python = "3.12"
-php = "8.4"
+"ubi:adwinying/php" = "8.4.20"
