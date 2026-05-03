@@ -1,5 +1,5 @@
 # If you come from bash you might have to change your $PATH.
-export PATH=$HOME/bin:/usr/local/bin:$M2_HOME/bin:$PATH
+export PATH="${HOME}/bin:/usr/local/bin${M2_HOME:+:${M2_HOME}/bin}:${PATH}"
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -8,6 +8,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+# shellcheck disable=SC2034
 ZSH_THEME="robbyrussell"
 
 # Set list of themes to pick from when loading at random
@@ -70,9 +71,10 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
+# shellcheck disable=SC2034
 plugins=(git)
 
-source $ZSH/oh-my-zsh.sh
+source "${ZSH}/oh-my-zsh.sh"
 
 # User configuration
 
@@ -139,6 +141,7 @@ _find_nearest_venv() {
 autovenv() {
   local venv_path=""
   if venv_path="$(_find_nearest_venv)"; then
+    # shellcheck disable=SC2154
     if [[ "$VIRTUAL_ENV" != "$venv_path" ]]; then
       type deactivate &>/dev/null && deactivate 2>/dev/null
       source "${venv_path}/bin/activate"

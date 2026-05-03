@@ -11,20 +11,20 @@ setup() {
   [ -f "${f}" ]
   run grep -E '^\[tools\]' "${f}"
   [ "$status" -eq 0 ]
-  run grep -E '^node\s*=' "${f}"
+  run grep -E '^node[[:space:]]*=' "${f}"
   [ "$status" -eq 0 ]
-  run grep -E '^python\s*=' "${f}"
+  run grep -E '^python[[:space:]]*=' "${f}"
   [ "$status" -eq 0 ]
-  run grep -E '^php\s*=' "${f}"
+  run grep -E '^php[[:space:]]*=' "${f}"
   [ "$status" -eq 0 ]
 }
 
 @test "dot_mise.toml tool pins are non-empty quoted strings" {
   local f="${REPO_ROOT}/dot_mise.toml"
-  run grep -E '^node\s*=\s*"[^"]+"' "${f}"
+  run grep -E '^node[[:space:]]*=[[:space:]]*"[^"]+"' "${f}"
   [ "$status" -eq 0 ]
-  run grep -E '^python\s*=\s*"[0-9.]+"' "${f}"
+  run grep -E '^python[[:space:]]*=[[:space:]]*"[0-9.]+"' "${f}"
   [ "$status" -eq 0 ]
-  run grep -E '^php\s*=\s*"[0-9.]+"' "${f}"
+  run grep -E '^php[[:space:]]*=[[:space:]]*"[0-9.]+"' "${f}"
   [ "$status" -eq 0 ]
 }

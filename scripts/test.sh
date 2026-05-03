@@ -21,9 +21,14 @@ if ! command -v bats >/dev/null 2>&1; then
   exit 127
 fi
 
-if ! python3 -c "import pytest" 2>/dev/null; then
+PYTHON_FOR_PYTEST="python3"
+if [[ -x "${REPO_ROOT}/.venv/bin/python" ]]; then
+  PYTHON_FOR_PYTEST="${REPO_ROOT}/.venv/bin/python"
+fi
+
+if ! "${PYTHON_FOR_PYTEST}" -c "import pytest" 2>/dev/null; then
   echo "pytest is not installed (needed for test_python/). Install dev deps:" >&2
-  echo "  pip install -r requirements-dev.txt" >&2
+  echo "  python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt" >&2
   echo "  # or: python3 -m pip install --user -r requirements-dev.txt" >&2
   exit 127
 fi
@@ -34,5 +39,5 @@ fi
 )
 (
   cd "${REPO_ROOT}"
-  python3 -m pytest test_python/
+  "${PYTHON_FOR_PYTEST}" -m pytest test_python/
 )
