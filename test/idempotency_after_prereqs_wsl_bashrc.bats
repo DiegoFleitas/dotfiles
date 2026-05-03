@@ -4,7 +4,7 @@ load 'helpers/common.bash'
 
 setup() {
   REPO_ROOT="$(repo_root)"
-  TARGET_FILE="${REPO_ROOT}/run_once_after_prereqs.sh"
+  TARGET_FILE="${REPO_ROOT}/install/after_prereqs.sh"
 }
 
 @test "after_prereqs WSL bashrc append is idempotent" {

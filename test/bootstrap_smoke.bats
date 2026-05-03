@@ -5,7 +5,7 @@ load 'helpers/common.bash'
 setup() {
   REPO_ROOT="$(repo_root)"
   TARGET_FILE="${REPO_ROOT}/bootstrap.sh"
-  FINALIZE_FILE="${REPO_ROOT}/run_once_before_finalize.sh"
+  FINALIZE_FILE="${REPO_ROOT}/install/before_finalize.sh"
   TEST_RUNNER_FILE="${REPO_ROOT}/scripts/test.sh"
   BREWFILE="${REPO_ROOT}/Brewfile"
   CHEZMOI_TMPL="${REPO_ROOT}/.chezmoi.toml.tmpl"

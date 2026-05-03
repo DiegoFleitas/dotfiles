@@ -61,7 +61,7 @@ def run_script_clean(
     if extra_env:
         env.update(extra_env)
     return subprocess.run(
-        ["/usr/bin/bash", "--noprofile", "--norc", str(script)],
+        ["/bin/bash", "--noprofile", "--norc", str(script)],
         env=env,
         cwd=script.parent,
         capture_output=True,
@@ -212,7 +212,7 @@ def test_after_prereqs_bun_installer_curl_logged(repo_root: Path, tmp_path: Path
         "bash",
         """\
         #!/bin/bash
-        exec /usr/bin/bash "$@"
+        exec /bin/bash "$@"
         """,
     )
 
@@ -298,7 +298,7 @@ def test_after_prereqs_bundle_before_flyctl(repo_root: Path, tmp_path: Path) -> 
         "bash",
         """\
         #!/bin/bash
-        exec /usr/bin/bash "$@"
+        exec /bin/bash "$@"
         """,
     )
 
@@ -383,7 +383,7 @@ def test_after_prereqs_mise_toolchain_message(repo_root: Path, tmp_path: Path) -
         "bash",
         """\
         #!/bin/bash
-        exec /usr/bin/bash "$@"
+        exec /bin/bash "$@"
         """,
     )
 

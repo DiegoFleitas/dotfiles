@@ -38,7 +38,7 @@ write_stub() {
 # Pipe/install steps invoke `bash` by name; PATH may not include /usr/bin.
 stub_bash_forwarder() {
   write_stub "bash" '#!/bin/bash
-exec /usr/bin/bash "$@"
+exec /bin/bash "$@"
 '
 }
 

@@ -45,7 +45,7 @@ write_stub() {
 # Pipe/install steps invoke `bash` by name; PATH may not include /usr/bin.
 stub_bash_forwarder() {
   write_stub "bash" '#!/bin/bash
-exec /usr/bin/bash "$@"
+exec /bin/bash "$@"
 '
 }
 
@@ -196,7 +196,7 @@ exit 98
 '
 
   # Run the script with a minimal PATH (stubs only). Oh-my-zsh install uses
-  # `/usr/bin/bash -c "$(curl …)"` (absolute bash). `apt` must not resolve from stubs
+  # `/bin/bash -c "$(curl …)"` (absolute bash). `apt` must not resolve from stubs
   # (e.g. do not prefix /bin: this system has /bin/apt which would set HAS_APT=1).
   dotfiles_run_script_clean "${TARGET_FILE}"
   [ "$status" -eq 0 ]
@@ -256,7 +256,7 @@ exit 0
 '
 
   # This curl is used by the oh-my-zsh installer invocation.
-  # The script does: `/usr/bin/bash -c "$(curl -fsSL https://.../install.sh)"`.
+  # The script does: `/bin/bash -c "$(curl -fsSL https://.../install.sh)"`.
   # We output a harmless shell snippet to prove that path ran.
   write_stub "curl" '#!/bin/bash
 echo "curl $*" >>"$CALL_LOG"

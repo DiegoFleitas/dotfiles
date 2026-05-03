@@ -56,8 +56,9 @@ dotfiles_run_script_clean() {
   [[ -n "${NVM_DIR+x}" ]] && env_cmd+=("NVM_DIR=${NVM_DIR}")
   [[ -n "${DOTFILES_TEST_BUN_INSTALL+x}" ]] && env_cmd+=("BUN_INSTALL=${DOTFILES_TEST_BUN_INSTALL}")
 
+  # Use /bin/bash so macOS CI runners can execute tests (/usr/bin/bash is often absent).
   # shellcheck disable=SC2068
-  run "${env_cmd[@]}" /usr/bin/bash --noprofile --norc "${script_path}" "$@"
+  run "${env_cmd[@]}" /bin/bash --noprofile --norc "${script_path}" "$@"
 }
 
 # Assert "${CALL_LOG}" contains a line matching a fixed string. Uses /usr/bin/grep so
