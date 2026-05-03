@@ -31,15 +31,11 @@ if [ "${HAS_APT}" -eq 1 ]; then
     output_message "Updating apt packages..."
     sudo apt update && sudo apt upgrade -y
 
-    # Install build essentials and required dependencies
-    output_message "Installing apt build dependencies..."
-    # bison/re2c: required when mise builds PHP from source (asdf-php); without bison, configure fails.
+    output_message "Installing apt dependencies (shell & general dev)..."
     sudo apt install -y \
       build-essential \
-      bison \
-      re2c \
-      libssl-dev \
       libffi-dev \
+      libssl-dev \
       python3-dev \
       zlib1g-dev \
       libbz2-dev \
@@ -49,6 +45,22 @@ if [ "${HAS_APT}" -eq 1 ]; then
       git \
       wget \
       zsh
+
+    # mise often builds PHP from source (asdf-php); keep these separate from general deps.
+    # https://github.com/asdf-community/asdf-php/issues/202
+    output_message "Installing apt dependencies for PHP source builds (mise / asdf-php)..."
+    sudo apt install -y \
+      autoconf \
+      pkg-config \
+      bison \
+      re2c \
+      libxml2-dev \
+      libcurl4-openssl-dev \
+      libgd-dev \
+      libicu-dev \
+      libonig-dev \
+      libpq-dev \
+      libzip-dev
 else
     output_message "apt not available. Skipping apt dependency setup."
 fi
