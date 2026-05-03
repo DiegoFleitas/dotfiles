@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+import sys
 import textwrap
 from pathlib import Path
 
@@ -400,6 +401,7 @@ def test_after_prereqs_mise_toolchain_message(repo_root: Path, tmp_path: Path) -
     assert "mise install -y" in Path(call_log).read_text()
 
 
+@pytest.mark.skipif(sys.platform != "linux", reason="WSL detection requires /proc/version (Linux only)")
 def test_before_finalize_wsl_skips_chsh(repo_root: Path, tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()

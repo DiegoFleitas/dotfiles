@@ -207,6 +207,11 @@ exit 98
 }
 
 @test "after_prereqs installs oh-my-zsh and appends exec zsh on WSL (idempotent guard path)" {
+  # Scripts gate WSL on [ -r /proc/version ]; macOS runners have no /proc.
+  if [[ ! -r /proc/version ]]; then
+    skip "WSL contract requires Linux /proc/version (skipped on macOS)"
+  fi
+
   # Force oh-my-zsh install path.
   rm -rf "${HOME}/.oh-my-zsh"
 

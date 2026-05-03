@@ -44,6 +44,11 @@ if [[ "${path}" != *"/"* ]]; then echo "."; else echo "${path%/*}"; fi
 }
 
 @test "before_finalize: skips chsh when WSL is detected" {
+  # is_wsl requires [ -r /proc/version ]; not present on macOS CI.
+  if [[ ! -r /proc/version ]]; then
+    skip "WSL contract requires Linux /proc/version (skipped on macOS)"
+  fi
+
   stub_dirname
   write_stub "zsh" '#!/bin/bash
 echo "zsh $*" >>"$CALL_LOG"
