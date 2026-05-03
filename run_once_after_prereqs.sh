@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 # This script runs at the start of chezmoi apply (run_after_): system deps, brew, nvm, oh-my-zsh, pyenv.
 
 # set -x  # This will bash print each command before executing it.
@@ -99,7 +100,7 @@ NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 export NVM_DIR
 if [ ! -s "$NVM_DIR/nvm.sh" ]; then
     output_message "Installing nvm..."
-    sh -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_INSTALL_VERSION}/install.sh | bash"
+    /bin/sh -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_INSTALL_VERSION}/install.sh | bash"
 fi
 
 # Bun (official installer; separate from nvm-managed Node)
@@ -133,15 +134,15 @@ fi
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     output_message "Installing oh-my-zsh..."
     # RUNZSH flag for unattended installation
-    RUNZSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    RUNZSH=no /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     # set zsh as default shell
-    if grep -qi microsoft /proc/version; then
+    if [ -r /proc/version ] && grep -qi microsoft /proc/version; then
         # WSL detected - add to shell profile instead of chsh
         if [ -f "$HOME/.bashrc" ] && ! grep -qxF "exec zsh" "$HOME/.bashrc"; then
             echo "exec zsh" >> "$HOME/.bashrc"
         fi
     else
-        chsh -s "$(which zsh)"
+        chsh -s "$(command -v zsh)"
     fi
 fi
 

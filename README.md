@@ -23,13 +23,14 @@ After install, run `source ~/.profile` (or open a new shell).
 - `zsh` with [oh-my-zsh](https://ohmyz.sh/)
 - Dotfiles like `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
 - Dev tooling via:
-  - [nvm](https://github.com/nvm-sh/nvm) (Node 22) + [Corepack](https://nodejs.org/api/corepack.html)
+  - [nvm](https://github.com/nvm-sh/nvm) (Node 22) + [Corepack](https://nodejs.org/api/corepack.html) — `npm` comes from the nvm-managed Node install, not a separate Homebrew `npm` package
   - [pyenv](https://github.com/pyenv/pyenv) (Python 3.12)
   - [Bun](https://bun.com) — official install script in `run_once_after_prereqs.sh` (not Homebrew)
   - [Homebrew](https://brew.sh/) + Brewfile (PHP 8.5, Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
 - Shell behavior:
-  - Auto-use project `.nvmrc`
-  - Auto-activate local `.venv` when present
+  - **nvm** and **pyenv** are lazy-loaded on first use (faster shell startup)
+  - Auto-use project `.nvmrc` (walks up directories)
+  - Auto-activate the nearest `.venv` (walks up from the current directory, like `.nvmrc` discovery)
 - Setup scripts run in order; optional `apps.sh` stays manual
 
 ## What happens during install
@@ -76,11 +77,23 @@ WSL behavior notes:
 > [!IMPORTANT]
 > On first `chezmoi apply`, you will be prompted for git `user.name` and `user.email`. Those values are cached. To change them later, run `chezmoi apply` again or edit `~/.config/chezmoi/chezmoi.toml`.
 
+Optional **signed commits**: add a `signingKey` (GPG or SSH) under `[data.git]` in `~/.config/chezmoi/chezmoi.toml`; the generated `.gitconfig` enables `commit.gpgsign` when that key is set (see `dot_gitconfig.tmpl` in this repo).
+
+## SSH keys, API tokens, and secrets
+
+This repo does **not** store private keys or API tokens. Suggested approach:
+
+1. **SSH for Git**: generate a key with `ssh-keygen`, add the public key to your host, and use `ssh-agent` as usual.
+2. **GitHub CLI**: `gh auth login` for HTTPS and API tasks when useful.
+3. **Sensitive config**: use [chezmoi encryption](https://chezmoi.io/user-guide/frequently-asked-questions/encryption/) (age), a password manager, or keep secrets out of the repo and symlink them.
+
+Do not commit cleartext tokens in templates that push to a public remote.
+
 ## Optional apps install
 
 Run `apps.sh` after setup to install extra applications (Docker, etc.) from `apps.conf`.
 
-`apps.sh` is run manually and installs applications from `apps.conf` using system-level installers common on Debian/Ubuntu: apt, `.deb` packages, snap, apt repositories, and PPAs. Homebrew-managed developer tools are provisioned from the `Brewfile` (applied during `run_once_after_prereqs.sh` with `brew bundle`). `Bun` is installed earlier in `run_once_after_prereqs.sh` using the official curl installer; other developer tooling comes from the `Brewfile`.
+`apps.sh` is **not** run automatically by chezmoi. Run it manually to install applications from `apps.conf` using system-level installers common on Debian/Ubuntu: apt, `.deb` packages, snap, apt repositories, and PPAs. On **macOS**, use Homebrew, the Mac App Store, or vendor installers for the same apps; this repo does not run `apps.sh` targets there. Homebrew-managed developer tools are provisioned from the `Brewfile` (applied during `run_once_after_prereqs.sh` with `brew bundle`). `Bun` is installed earlier in `run_once_after_prereqs.sh` using the official curl installer; other developer tooling comes from the `Brewfile`. Bun’s install directory is added to `PATH` from `.profile`, `.zshrc`, and `.bashrc`.
 
 **Fly.io CLI** is optional. Install during `chezmoi apply` with `DOTFILES_INSTALL_FLYCTL=1` (for example `DOTFILES_INSTALL_FLYCTL=1 chezmoi apply`), or run `brew install flyctl` after setup.
 
@@ -111,7 +124,8 @@ Dry-run (prints what would be installed; does not run installs):
 
 ## Compatibility
 
-Tested on **Ubuntu 22.04.5 LTS** and newer.
+- **Linux**: Tested on **Ubuntu 22.04.5 LTS** and newer. `run_once_*.sh` and `apps.sh` target apt/snap-based environments.
+- **macOS**: Shell configs and Homebrew work on Apple Silicon and Intel; `apps.sh` is not used there (see [Optional apps install](#optional-apps-install)).
 
 ## Version management
 
@@ -170,10 +184,12 @@ bats test/
 CI:
 - `.github/workflows/test.yml` installs Bats and runs `bats test/` on push and pull request events
 
-Current test coverage:
-- `scripts/check-version-drift.sh` passes with valid repo state
-- `scripts/check-version-drift.sh` fails when `dot_nvmrc` and `versions.env` diverge
-- `run_once_after_prereqs.sh` and `run_once_before_finalize.sh` keep using centralized version variables
+Current test coverage (see `bats test/`):
+- `scripts/check-version-drift.sh` passes with valid repo state; fails on `dot_nvmrc` / `versions.env` drift
+- Grep-based contracts for `run_once_*.sh` (strict mode, version variables, brew bundle, optional flyctl)
+- `test/after_prereqs_behavior.bats` exercises stubbed `run_once_after_prereqs.sh` paths
+- `apps.sh` / `apps.conf` invariants and dry-run safety
+- `dot_gitconfig.tmpl` and shell config expectations (portable Homebrew, no hardcoded Linuxbrew-only `shellenv`)
 
 ## Troubleshooting
 

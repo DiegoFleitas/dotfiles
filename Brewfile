@@ -5,8 +5,7 @@ brew "pnpm"
 brew "biome"   # lint + format for JS/TS (replaces eslint + prettier in one binary)
 brew "wget"
 brew "gcc" # Recommended by Homebrew
-# brew "node" # should be handled by nvm
-brew "npm"
+# brew "node" # should be handled by nvm (npm ships with that Node; avoid brew npm shadowing nvm)
 brew "php"
 brew "composer"
 brew "awscli"

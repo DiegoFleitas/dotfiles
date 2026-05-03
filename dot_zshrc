@@ -100,22 +100,59 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Homebrew
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Homebrew (same resolution order as run_once_after_prereqs.sh)
+if command -v brew >/dev/null 2>&1; then
+  eval "$(brew shellenv)"
+elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
 
 # bun (https://bun.com)
 export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
 case ":${PATH}:" in *":${BUN_INSTALL}/bin:"*) ;; *) PATH="${BUN_INSTALL}/bin:${PATH}" ;; esac
 
-# NVM
+# nvm — lazy-loaded (first use of nvm/node/npm/npx/corepack or directory hook)
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+_nvm_lazy_load() {
+  [[ -n "${NVM_LAZY_LOADED:-}" ]] && return 0
+  [[ -s "$NVM_DIR/nvm.sh" ]] || return 1
+  unset -f nvm node npm npx corepack 2>/dev/null
+  \. "$NVM_DIR/nvm.sh"
+  [[ -s "$NVM_DIR/bash_completion" ]] && \. "$NVM_DIR/bash_completion"
+  NVM_LAZY_LOADED=1
+  return 0
+}
+
+nvm() {
+  _nvm_lazy_load || return 1
+  nvm "$@"
+}
+node() {
+  _nvm_lazy_load || return 1
+  command node "$@"
+}
+npm() {
+  _nvm_lazy_load || return 1
+  command npm "$@"
+}
+npx() {
+  _nvm_lazy_load || return 1
+  command npx "$@"
+}
+corepack() {
+  _nvm_lazy_load || return 1
+  command corepack "$@"
+}
 
 # Calling nvm use automatically in a directory with a .nvmrc file
-# place this after nvm initialization!
 autoload -U add-zsh-hook
 load-nvmrc() {
+  _nvm_lazy_load || return 0
   local nvmrc_path
   nvmrc_path="$(nvm_find_nvmrc)"
 
@@ -136,22 +173,56 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
-# Pyenv
-if command -v pyenv 1>/dev/null 2>&1; then
-  eval "$(pyenv init -)"
-fi
+# pyenv — lazy-loaded (first use of pyenv/python/pip)
+_pyenv_lazy_load() {
+  [[ -n "${PYENV_LAZY_LOADED:-}" ]] && return 0
+  command -v pyenv >/dev/null 2>&1 || return 1
+  unset -f pyenv python3 pip pip3 2>/dev/null
+  unalias python 2>/dev/null
+  eval "$(command pyenv init -)"
+  PYENV_LAZY_LOADED=1
+  return 0
+}
 
-# Auto-activate .venv when entering a directory that has one
+pyenv() {
+  _pyenv_lazy_load || return 1
+  command pyenv "$@"
+}
+python3() {
+  _pyenv_lazy_load 2>/dev/null || true
+  command python3 "$@"
+}
+pip() {
+  _pyenv_lazy_load 2>/dev/null || true
+  command pip "$@"
+}
+pip3() {
+  _pyenv_lazy_load 2>/dev/null || true
+  command pip3 "$@"
+}
+
+# Auto-activate nearest .venv (walks up from $PWD like .nvmrc discovery)
+_find_nearest_venv() {
+  local dir="$PWD"
+  while true; do
+    [[ -d "$dir/.venv" ]] && { echo "$dir/.venv"; return 0; }
+    [[ "$dir" == "/" ]] && return 1
+    dir="${dir:h}"
+  done
+}
+
 autovenv() {
-  if [[ -d .venv ]] && [[ "$VIRTUAL_ENV" != "$PWD/.venv" ]]; then
+  local venv_path=""
+  if venv_path="$(_find_nearest_venv)"; then
+    if [[ "$VIRTUAL_ENV" != "$venv_path" ]]; then
+      type deactivate &>/dev/null && deactivate 2>/dev/null
+      source "${venv_path}/bin/activate"
+    fi
+  else
     type deactivate &>/dev/null && deactivate 2>/dev/null
-    source .venv/bin/activate
-  elif ! [[ -d .venv ]] && type deactivate &>/dev/null; then
-    deactivate 2>/dev/null
   fi
 }
 add-zsh-hook chpwd autovenv
 autovenv
 
-# Python alias
 alias python=python3

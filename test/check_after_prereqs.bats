@@ -7,6 +7,11 @@ setup() {
   TARGET_FILE="${REPO_ROOT}/run_once_after_prereqs.sh"
 }
 
+@test "after_prereqs runs in strict mode (set -euo pipefail)" {
+  run grep -F 'set -euo pipefail' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
 @test "after_prereqs sources versions.env and defaults version variables" {
   run grep -F '[ -f "${SCRIPT_DIR}/versions.env" ] && . "${SCRIPT_DIR}/versions.env"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]

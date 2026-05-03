@@ -180,9 +180,9 @@ echo "sudo $*" >>"$CALL_LOG"
 exit 98
 '
 
-  # Run the script with a minimal PATH consisting only of our stubs.
-  # This guarantees `command -v apt` fails (so HAS_APT=0) and prevents any
-  # real system commands/network/package managers from running.
+  # Run the script with a minimal PATH (stubs only). The script invokes `/bin/sh`
+  # with an absolute path so `sh` need not be on PATH. `apt` must not resolve
+  # (e.g. do not prefix /bin: this system has /bin/apt which would set HAS_APT=1).
   run /usr/bin/env PATH="${BIN_DIR}" /usr/bin/bash "${TARGET_FILE}"
   [ "$status" -eq 0 ]
   [[ "$output" == *"apt not available. Skipping apt dependency setup."* ]]
