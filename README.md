@@ -37,7 +37,7 @@ After install, run `source ~/.profile` (or open a new shell).
 `chezmoi init --apply` clones this repo and runs:
 
 1. `run_once_after_prereqs.sh`
-   - apt update/upgrade, build deps, Homebrew, Bun (curl installer), oh-my-zsh, `brew bundle` (includes mise), then `mise install` from `dot_mise.toml`
+   - apt update/upgrade and build deps (Linux with apt), Homebrew (install if needed), Bun (curl installer), `brew bundle`, then `mise install` from `dot_mise.toml`, optional Fly.io CLI (`DOTFILES_INSTALL_FLYCTL=1`), then oh-my-zsh. Exits early if run as root.
 2. Dotfiles apply
    - symlinks/copies for config files (including `~/.mise.toml`)
 3. `run_once_before_finalize.sh`
