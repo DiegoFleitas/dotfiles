@@ -3,18 +3,23 @@
 load 'helpers/common.bash'
 
 setup() {
+  dotfiles_clear_stub_path_conflicts
   REPO_ROOT="$(repo_root)"
   TARGET_FILE="${REPO_ROOT}/run_once_after_prereqs.sh"
 
   TEST_TMPDIR="$(mktemp -d)"
   BIN_DIR="${TEST_TMPDIR}/bin"
   mkdir -p "${BIN_DIR}"
+  export BIN_DIR
 
   CALL_LOG="${TEST_TMPDIR}/calls.log"
   : > "${CALL_LOG}"
 
   export CALL_LOG
-  export PATH="${BIN_DIR}:${PATH}"
+  export DOTFILES_BREW_USE_PATH_ONLY=1
+  export DOTFILES_DISABLE_APT=1
+  unset DOTFILES_INSTALL_FLYCTL 2>/dev/null || true
+  export PATH="${BIN_DIR}:/bin:/usr/bin"
 
   # Isolate HOME so the script can't touch the real dotfiles.
   export HOME="${TEST_TMPDIR}/home"
@@ -40,13 +45,13 @@ write_stub() {
 }
 
 @test "after_prereqs exits early when run as root (no side-effect commands invoked)" {
-  write_stub "uname" '#!/usr/bin/env bash
+  write_stub "uname" '#!/bin/bash
 echo "uname $*" >>"$CALL_LOG"
 echo "Linux"
 '
 
   # Make id -u report root.
-  write_stub "id" '#!/usr/bin/env bash
+  write_stub "id" '#!/bin/bash
 echo "id $*" >>"$CALL_LOG"
 if [ "${1:-}" = "-u" ]; then
   echo 0
@@ -56,24 +61,24 @@ echo 0
 '
 
   # Side-effect commands should never run past the guard.
-  write_stub "sudo" '#!/usr/bin/env bash
+  write_stub "sudo" '#!/bin/bash
 echo "sudo $*" >>"$CALL_LOG"
 exit 99
 '
-  write_stub "apt" '#!/usr/bin/env bash
+  write_stub "apt" '#!/bin/bash
 echo "apt $*" >>"$CALL_LOG"
 exit 99
 '
-  write_stub "brew" '#!/usr/bin/env bash
+  write_stub "brew" '#!/bin/bash
 echo "brew $*" >>"$CALL_LOG"
 exit 99
 '
-  write_stub "curl" '#!/usr/bin/env bash
+  write_stub "curl" '#!/bin/bash
 echo "curl $*" >>"$CALL_LOG"
 exit 99
 '
 
-  run bash "${TARGET_FILE}"
+  dotfiles_run_script_clean "${TARGET_FILE}"
   [ "$status" -eq 1 ]
   [[ "$output" == *"Rerun as non root."* ]]
 
@@ -91,12 +96,12 @@ exit 99
   # Make sure the real system `apt` isn't discoverable via PATH.
   # We only restrict PATH for the script invocation (not for Bats itself).
 
-  write_stub "uname" '#!/usr/bin/bash
+  write_stub "uname" '#!/bin/bash
 echo "uname $*" >>"$CALL_LOG"
 echo "Linux"
 '
 
-  write_stub "dirname" '#!/usr/bin/bash
+  write_stub "dirname" '#!/bin/bash
 echo "dirname $*" >>"$CALL_LOG"
 path="${1:-}"
 path="${path%/}"
@@ -108,7 +113,7 @@ fi
 '
 
   # Non-root execution.
-  write_stub "id" '#!/usr/bin/bash
+  write_stub "id" '#!/bin/bash
 echo "id $*" >>"$CALL_LOG"
 if [ "${1:-}" = "-u" ]; then
   echo 1000
@@ -118,17 +123,17 @@ echo 1000
 '
 
   # Ensure git/curl are considered installed (avoid apt installs).
-  write_stub "git" '#!/usr/bin/bash
+  write_stub "git" '#!/bin/bash
 echo "git $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "curl" '#!/usr/bin/bash
+  write_stub "curl" '#!/bin/bash
 echo "curl $*" >>"$CALL_LOG"
 exit 0
 '
 
   # Provide brew and all commands used later in the script.
-  write_stub "brew" '#!/usr/bin/bash
+  write_stub "brew" '#!/bin/bash
 echo "brew $*" >>"$CALL_LOG"
 case "${1:-}" in
   shellenv) exit 0 ;;
@@ -137,7 +142,7 @@ case "${1:-}" in
 esac
 exit 0
 '
-  write_stub "pyenv" '#!/usr/bin/bash
+  write_stub "pyenv" '#!/bin/bash
 echo "pyenv $*" >>"$CALL_LOG"
 if [ "${1:-}" = "versions" ]; then
   printf "%s\n" "* 3.12.0 (set by stub)"
@@ -145,7 +150,7 @@ if [ "${1:-}" = "versions" ]; then
 fi
 exit 0
 '
-  write_stub "grep" '#!/usr/bin/bash
+  write_stub "grep" '#!/bin/bash
 echo "grep $*" >>"$CALL_LOG"
 if [ "${1:-}" = "-q" ]; then
   pattern="${2:-}"
@@ -157,25 +162,25 @@ if [ "${1:-}" = "-q" ]; then
 fi
 exit 2
 '
-  write_stub "python3" '#!/usr/bin/bash
+  write_stub "python3" '#!/bin/bash
 echo "python3 $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "chsh" '#!/usr/bin/bash
+  write_stub "chsh" '#!/bin/bash
 echo "chsh $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "wget" '#!/usr/bin/bash
+  write_stub "wget" '#!/bin/bash
 echo "wget $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "zsh" '#!/usr/bin/bash
+  write_stub "zsh" '#!/bin/bash
 echo "zsh $*" >>"$CALL_LOG"
 exit 0
 '
 
   # If sudo is invoked, we want the test to fail fast.
-  write_stub "sudo" '#!/usr/bin/bash
+  write_stub "sudo" '#!/bin/bash
 echo "sudo $*" >>"$CALL_LOG"
 exit 98
 '
@@ -183,11 +188,11 @@ exit 98
   # Run the script with a minimal PATH (stubs only). The script invokes `/bin/sh`
   # with an absolute path so `sh` need not be on PATH. `apt` must not resolve
   # (e.g. do not prefix /bin: this system has /bin/apt which would set HAS_APT=1).
-  run /usr/bin/env PATH="${BIN_DIR}" /usr/bin/bash "${TARGET_FILE}"
+  dotfiles_run_script_clean "${TARGET_FILE}"
   [ "$status" -eq 0 ]
   [[ "$output" == *"apt not available. Skipping apt dependency setup."* ]]
 
-  run grep -F "sudo apt" "${CALL_LOG}"
+  run /usr/bin/grep -F "sudo apt" "${CALL_LOG}"
   [ "$status" -ne 0 ]
 }
 
@@ -195,12 +200,12 @@ exit 98
   # Force oh-my-zsh install path.
   rm -rf "${HOME}/.oh-my-zsh"
 
-  write_stub "uname" '#!/usr/bin/bash
+  write_stub "uname" '#!/bin/bash
 echo "uname $*" >>"$CALL_LOG"
 echo "Linux"
 '
 
-  write_stub "dirname" '#!/usr/bin/bash
+  write_stub "dirname" '#!/bin/bash
 path="${1:-}"
 path="${path%/}"
 if [[ "${path}" != *"/"* ]]; then
@@ -210,7 +215,7 @@ else
 fi
 '
 
-  write_stub "id" '#!/usr/bin/bash
+  write_stub "id" '#!/bin/bash
 if [ "${1:-}" = "-u" ]; then
   echo 1000
   exit 0
@@ -220,7 +225,7 @@ echo 1000
 
   # Simulate WSL detection: `grep -qi microsoft /proc/version` should succeed.
   # Also support the idempotency guard: `grep -qxF "exec zsh" "$HOME/.bashrc"`.
-  write_stub "grep" '#!/usr/bin/bash
+  write_stub "grep" '#!/bin/bash
 if [ "${1:-}" = "-qi" ] && [ "${2:-}" = "microsoft" ] && [ "${3:-}" = "/proc/version" ]; then
   exit 0
 fi
@@ -236,20 +241,20 @@ exit 1
 '
 
   # Ensure git/curl are considered installed so we don't hit apt installs.
-  write_stub "git" '#!/usr/bin/bash
+  write_stub "git" '#!/bin/bash
 exit 0
 '
 
   # This curl is used by the oh-my-zsh installer invocation.
   # The script does: `sh -c "$(curl -fsSL https://.../install.sh)"`.
   # We output a harmless shell snippet to prove that path ran.
-  write_stub "curl" '#!/usr/bin/bash
+  write_stub "curl" '#!/bin/bash
 echo "curl $*" >>"$CALL_LOG"
 printf "%s\n" "echo OMZ_INSTALLER_RAN"
 exit 0
 '
 
-  write_stub "sh" '#!/usr/bin/bash
+  write_stub "sh" '#!/bin/bash
 echo "sh $*" >>"$CALL_LOG"
 if [ "${1:-}" = "-c" ]; then
   /usr/bin/bash -c "${2:-}"
@@ -258,11 +263,11 @@ fi
 exit 0
 '
 
-  write_stub "brew" '#!/usr/bin/bash
+  write_stub "brew" '#!/bin/bash
 echo "brew $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "pyenv" '#!/usr/bin/bash
+  write_stub "pyenv" '#!/bin/bash
 echo "pyenv $*" >>"$CALL_LOG"
 if [ "${1:-}" = "versions" ]; then
   printf "%s\n" "* 3.12.0 (set by stub)"
@@ -270,27 +275,27 @@ if [ "${1:-}" = "versions" ]; then
 fi
 exit 0
 '
-  write_stub "python3" '#!/usr/bin/bash
+  write_stub "python3" '#!/bin/bash
 exit 0
 '
-  write_stub "zsh" '#!/usr/bin/bash
+  write_stub "zsh" '#!/bin/bash
 exit 0
 '
-  write_stub "wget" '#!/usr/bin/bash
+  write_stub "wget" '#!/bin/bash
 exit 0
 '
-  write_stub "chsh" '#!/usr/bin/bash
+  write_stub "chsh" '#!/bin/bash
 echo "chsh $*" >>"$CALL_LOG"
 exit 0
 '
 
   # Fail fast if sudo is invoked (it shouldn't be, since HAS_APT should be 0).
-  write_stub "sudo" '#!/usr/bin/bash
+  write_stub "sudo" '#!/bin/bash
 echo "sudo $*" >>"$CALL_LOG"
 exit 98
 '
 
-  run /usr/bin/env PATH="${BIN_DIR}" /usr/bin/bash "${TARGET_FILE}"
+  dotfiles_run_script_clean "${TARGET_FILE}"
   if [ "$status" -ne 0 ]; then
     echo "SCRIPT_EXIT_STATUS=$status"
     echo "SCRIPT_OUTPUT_START"
@@ -319,11 +324,11 @@ exit 98
 @test "after_prereqs installs oh-my-zsh and calls chsh on non-WSL" {
   rm -rf "${HOME}/.oh-my-zsh"
 
-  write_stub "uname" '#!/usr/bin/bash
+  write_stub "uname" '#!/bin/bash
 echo "Linux"
 '
 
-  write_stub "dirname" '#!/usr/bin/bash
+  write_stub "dirname" '#!/bin/bash
 path="${1:-}"
 path="${path%/}"
 if [[ "${path}" != *"/"* ]]; then
@@ -333,7 +338,7 @@ else
 fi
 '
 
-  write_stub "id" '#!/usr/bin/bash
+  write_stub "id" '#!/bin/bash
 if [ "${1:-}" = "-u" ]; then
   echo 1000
   exit 0
@@ -342,7 +347,7 @@ echo 1000
 '
 
   # Non-WSL detection: make the microsoft grep check fail.
-  write_stub "grep" '#!/usr/bin/bash
+  write_stub "grep" '#!/bin/bash
 if [ "${1:-}" = "-qi" ] && [ "${2:-}" = "microsoft" ] && [ "${3:-}" = "/proc/version" ]; then
   exit 1
 fi
@@ -357,14 +362,14 @@ fi
 exit 1
 '
 
-  write_stub "git" '#!/usr/bin/bash
+  write_stub "git" '#!/bin/bash
 exit 0
 '
-  write_stub "curl" '#!/usr/bin/bash
+  write_stub "curl" '#!/bin/bash
 printf "%s\n" "echo OMZ_INSTALLER_RAN"
 exit 0
 '
-  write_stub "sh" '#!/usr/bin/bash
+  write_stub "sh" '#!/bin/bash
 if [ "${1:-}" = "-c" ]; then
   /usr/bin/bash -c "${2:-}"
   exit $?
@@ -373,43 +378,43 @@ exit 0
 '
 
   # `which zsh` is used in the non-WSL branch.
-  write_stub "which" '#!/usr/bin/bash
+  write_stub "which" '#!/bin/bash
 if [ "${1:-}" = "zsh" ]; then
   echo "${BIN_DIR}/zsh"
   exit 0
 fi
 exit 1
 '
-  write_stub "zsh" '#!/usr/bin/bash
+  write_stub "zsh" '#!/bin/bash
 exit 0
 '
-  write_stub "chsh" '#!/usr/bin/bash
+  write_stub "chsh" '#!/bin/bash
 echo "chsh $*" >>"$CALL_LOG"
 exit 0
 '
 
   # Keep the rest harmless.
-  write_stub "brew" '#!/usr/bin/bash
+  write_stub "brew" '#!/bin/bash
 exit 0
 '
-  write_stub "pyenv" '#!/usr/bin/bash
+  write_stub "pyenv" '#!/bin/bash
 if [ "${1:-}" = "versions" ]; then
   printf "%s\n" "* 3.12.0 (set by stub)"
   exit 0
 fi
 exit 0
 '
-  write_stub "python3" '#!/usr/bin/bash
+  write_stub "python3" '#!/bin/bash
 exit 0
 '
-  write_stub "wget" '#!/usr/bin/bash
+  write_stub "wget" '#!/bin/bash
 exit 0
 '
-  write_stub "sudo" '#!/usr/bin/bash
+  write_stub "sudo" '#!/bin/bash
 exit 98
 '
 
-  run /usr/bin/env PATH="${BIN_DIR}" /usr/bin/bash "${TARGET_FILE}"
+  dotfiles_run_script_clean "${TARGET_FILE}"
   if [ "$status" -ne 0 ]; then
     echo "SCRIPT_EXIT_STATUS=$status"
     echo "SCRIPT_OUTPUT_START"
@@ -432,11 +437,11 @@ exit 98
 @test "after_prereqs installs flyctl when DOTFILES_INSTALL_FLYCTL=1 and CLI absent" {
   mkdir -p "${HOME}/.oh-my-zsh"
 
-  write_stub "uname" '#!/usr/bin/bash
+  write_stub "uname" '#!/bin/bash
 echo "Linux"
 '
 
-  write_stub "dirname" '#!/usr/bin/bash
+  write_stub "dirname" '#!/bin/bash
 path="${1:-}"
 path="${path%/}"
 if [[ "${path}" != *"/"* ]]; then
@@ -446,7 +451,7 @@ else
 fi
 '
 
-  write_stub "id" '#!/usr/bin/bash
+  write_stub "id" '#!/bin/bash
 if [ "${1:-}" = "-u" ]; then
   echo 1000
   exit 0
@@ -454,14 +459,14 @@ fi
 echo 1000
 '
 
-  write_stub "git" '#!/usr/bin/bash
+  write_stub "git" '#!/bin/bash
 exit 0
 '
-  write_stub "curl" '#!/usr/bin/bash
+  write_stub "curl" '#!/bin/bash
 exit 0
 '
 
-  write_stub "brew" '#!/usr/bin/bash
+  write_stub "brew" '#!/bin/bash
 echo "brew $*" >>"$CALL_LOG"
 case "${1:-}" in
   shellenv) exit 0 ;;
@@ -470,7 +475,7 @@ case "${1:-}" in
 esac
 exit 0
 '
-  write_stub "pyenv" '#!/usr/bin/bash
+  write_stub "pyenv" '#!/bin/bash
 echo "pyenv $*" >>"$CALL_LOG"
 if [ "${1:-}" = "versions" ]; then
   printf "%s\n" "* 3.12.0 (set by stub)"
@@ -478,10 +483,10 @@ if [ "${1:-}" = "versions" ]; then
 fi
 exit 0
 '
-  write_stub "python3" '#!/usr/bin/bash
+  write_stub "python3" '#!/bin/bash
 exit 0
 '
-  write_stub "grep" '#!/usr/bin/bash
+  write_stub "grep" '#!/bin/bash
 if [ "${1:-}" = "-q" ] && [ -n "${2:-}" ]; then
   if [ "${2:-}" = "3.12" ]; then
     exit 0
@@ -489,20 +494,21 @@ if [ "${1:-}" = "-q" ] && [ -n "${2:-}" ]; then
 fi
 exit 1
 '
-  write_stub "chsh" '#!/usr/bin/bash
+  write_stub "chsh" '#!/bin/bash
 exit 0
 '
-  write_stub "wget" '#!/usr/bin/bash
+  write_stub "wget" '#!/bin/bash
 exit 0
 '
-  write_stub "zsh" '#!/usr/bin/bash
+  write_stub "zsh" '#!/bin/bash
 exit 0
 '
-  write_stub "sudo" '#!/usr/bin/bash
+  write_stub "sudo" '#!/bin/bash
 exit 98
 '
 
-  run /usr/bin/env PATH="${BIN_DIR}" DOTFILES_INSTALL_FLYCTL=1 /usr/bin/bash "${TARGET_FILE}"
+  export DOTFILES_INSTALL_FLYCTL=1
+  dotfiles_run_script_clean "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
   run /bin/grep -F "brew install flyctl" "${CALL_LOG}"

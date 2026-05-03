@@ -47,8 +47,10 @@ setup() {
   [ "$status" -ne 0 ]
 }
 
-@test "canonical test runner remains scripts/test.sh to bats test" {
-  run grep -F 'exec bats test/' "${TEST_RUNNER_FILE}"
+@test "canonical test runner remains scripts/test.sh (bats + pytest)" {
+  run grep -F 'bats --jobs 1 test/' "${TEST_RUNNER_FILE}"
+  [ "$status" -eq 0 ]
+  run grep -F 'pytest test_python/' "${TEST_RUNNER_FILE}"
   [ "$status" -eq 0 ]
 }
 
