@@ -62,7 +62,7 @@ def run_script_clean(
 
 
 def test_after_prereqs_brew_bundle_failure_aborts(repo_root: Path, tmp_path: Path) -> None:
-    """Mirrors test/check_after_prereqs.bats first test."""
+    """Strict-mode brew bundle failure (Bats case removed; covered here only)."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     home = tmp_path / "home"
