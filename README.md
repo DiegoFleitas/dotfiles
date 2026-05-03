@@ -3,6 +3,15 @@
 [![Test](https://github.com/DiegoFleitas/dotfiles/actions/workflows/test.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/test.yml)
 [![Version drift](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml)
 
+[![chezmoi](https://img.shields.io/badge/chezmoi-dotfiles-1B5E8A?logo=chezmoi&logoColor=white&style=flat-square)](https://www.chezmoi.io/)
+[![Zsh](https://img.shields.io/badge/Zsh-shell-4EAA25?logo=zsh&logoColor=white&style=flat-square)](https://www.zsh.org/)
+[![mise](https://img.shields.io/badge/mise-tool%20versions-000000?logo=mise&logoColor=white&style=flat-square)](https://mise.jdx.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white&style=flat-square)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white&style=flat-square)](https://www.python.org/)
+[![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white&style=flat-square)](https://www.php.net/)
+[![Bun](https://img.shields.io/badge/Bun-runtime-000000?logo=bun&logoColor=white&style=flat-square)](https://bun.com/)
+[![Homebrew](https://img.shields.io/badge/Homebrew-packages-FBB040?logo=homebrew&logoColor=black&style=flat-square)](https://brew.sh/)
+
 Personal Linux/macOS environment setup with [chezmoi](https://www.chezmoi.io/), shell scripts, and versioned configs.
 
 Quick links: [new machine](#tldr-new-machine) | [update current machine](#tldr-update-current-machine)
@@ -134,11 +143,13 @@ Node note: keep **`dot_nvmrc`** aligned with the `node = "…"` entry so `~/.nvm
 
 Python refresh: run `DOTFILES_PYTHON_REFRESH=1 chezmoi apply` to force a reinstall of the Python version via mise (`run_once_before_finalize.sh`).
 
+PHP (Linux / WSL): the default `php` tool in mise is built from source and can use a lot of RAM at link time. This repo sets conservative `MAKEFLAGS` / `ASDF_CONCURRENCY` in `install/mise_install_env.sh` before `mise install`. If the build still fails (often at the `php-cgi` link), raise the WSL or VM memory limit, run with `MISE_VERBOSE=1 mise install -y` to see the real error, or point a large disk at the build with `TMPDIR` if `/tmp` is tight.
+
 ### Bump versions
 
 1. Edit `dot_mise.toml` (`node`, `python`, `php`)
 2. Update `dot_nvmrc` if you changed the Node line
-3. Update this README if you change major/minor lines so the documented numbers stay accurate
+3. Update this README if you change major/minor lines so the documented numbers stay accurate (including the Shields badge labels after the CI badges)
 4. Run `./scripts/test.sh` (includes contract tests for README / `dot_nvmrc` alignment)
 5. Commit the bump
 
