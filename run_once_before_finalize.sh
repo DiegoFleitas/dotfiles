@@ -15,7 +15,7 @@ export MISE_CONFIG_FILE="${SCRIPT_DIR}/dot_mise.toml"
 : "${DOTFILES_PYTHON_REFRESH:=0}"
 
 is_wsl() {
-  grep -qi microsoft /proc/version 2>/dev/null
+  command -v grep >/dev/null 2>&1 && [ -r /proc/version ] && grep -qi microsoft /proc/version 2>/dev/null
 }
 
 # Ensure Zsh is installed before proceeding

@@ -11,6 +11,13 @@ output_message() {
     echo "======================================="
 }
 
+# Early return if root user (brew install errors out on root). Must run before
+# SCRIPT_DIR/HAS_APT so stub-isolated tests (minimal PATH) never hit 127 first.
+if [ "$(id -u)" -eq 0 ]; then
+    echo "Rerun as non root."
+    exit 1
+fi
+
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC2034
 export MISE_CONFIG_FILE="${SCRIPT_DIR}/dot_mise.toml"
@@ -21,12 +28,6 @@ elif [ "$(uname -s)" = "Linux" ] && command -v apt >/dev/null 2>&1; then
     HAS_APT=1
 else
     HAS_APT=0
-fi
-
-# Early return if root user (brew install errors out on root)
-if [ "$(id -u)" -eq 0 ]; then
-   output_message "Rerun as non root."
-   exit 1
 fi
 
 ### Essentials
@@ -98,7 +99,12 @@ BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
 export BUN_INSTALL
 if [ ! -x "$BUN_INSTALL/bin/bun" ]; then
     output_message "Installing bun..."
-    curl -fsSL https://bun.com/install | bash
+    if command -v bash >/dev/null 2>&1; then
+        curl -fsSL https://bun.com/install | bash
+    else
+        echo "bash not found; cannot install bun." >&2
+        exit 1
+    fi
 fi
 
 # Install brew packages
@@ -141,16 +147,18 @@ fi
 # Install oh-my-zsh if not already installed
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     output_message "Installing oh-my-zsh..."
-    # RUNZSH flag for unattended installation
-    RUNZSH=no /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    # RUNZSH flag for unattended installation (bash matches CI/test stubs and curl | bash)
+    RUNZSH=no /usr/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     # set zsh as default shell
-    if [ -r /proc/version ] && grep -qi microsoft /proc/version; then
+    if [ -r /proc/version ] && command -v grep >/dev/null 2>&1 && grep -qi microsoft /proc/version; then
         # WSL detected - add to shell profile instead of chsh
         if [ -f "$HOME/.bashrc" ] && ! grep -qxF "exec zsh" "$HOME/.bashrc"; then
             echo "exec zsh" >> "$HOME/.bashrc"
         fi
     else
-        chsh -s "$(command -v zsh)"
+        if command -v chsh >/dev/null 2>&1; then
+            chsh -s "$(command -v zsh)"
+        fi
     fi
 fi
 
