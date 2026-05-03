@@ -6,8 +6,8 @@ setup() {
   REPO_ROOT="$(repo_root)"
   APPS_CONF="${REPO_ROOT}/apps.conf"
   README="${REPO_ROOT}/README.md"
-  FINALIZE="${REPO_ROOT}/run_once_before_finalize.sh"
-  AFTER_PREREQS="${REPO_ROOT}/run_once_after_prereqs.sh"
+  FINALIZE="${REPO_ROOT}/install/before_finalize.sh"
+  AFTER_PREREQS="${REPO_ROOT}/install/after_prereqs.sh"
   APPS_SH="${REPO_ROOT}/apps.sh"
 }
 

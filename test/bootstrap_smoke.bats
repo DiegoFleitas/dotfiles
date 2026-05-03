@@ -5,7 +5,7 @@ load 'helpers/common.bash'
 setup() {
   REPO_ROOT="$(repo_root)"
   TARGET_FILE="${REPO_ROOT}/bootstrap.sh"
-  FINALIZE_FILE="${REPO_ROOT}/run_once_before_finalize.sh"
+  FINALIZE_FILE="${REPO_ROOT}/install/before_finalize.sh"
   TEST_RUNNER_FILE="${REPO_ROOT}/scripts/test.sh"
   BREWFILE="${REPO_ROOT}/Brewfile"
   CHEZMOI_TMPL="${REPO_ROOT}/.chezmoi.toml.tmpl"
@@ -47,15 +47,17 @@ setup() {
   [ "$status" -ne 0 ]
 }
 
-@test "canonical test runner remains scripts/test.sh to bats test" {
-  run grep -F 'exec bats test/' "${TEST_RUNNER_FILE}"
+@test "canonical test runner remains scripts/test.sh (bats + pytest)" {
+  run grep -F 'bats --jobs 1 test/' "${TEST_RUNNER_FILE}"
+  [ "$status" -eq 0 ]
+  run grep -F 'pytest test_python/' "${TEST_RUNNER_FILE}"
   [ "$status" -eq 0 ]
 }
 
-@test "Brewfile installs php and composer via Homebrew but not bun" {
+@test "Brewfile installs mise and composer via Homebrew but not bun" {
   [ -f "${BREWFILE}" ]
 
-  run grep -F 'brew "php"' "${BREWFILE}"
+  run grep -F 'brew "mise"' "${BREWFILE}"
   [ "$status" -eq 0 ]
 
   run grep -F 'brew "composer"' "${BREWFILE}"
@@ -68,7 +70,7 @@ setup() {
 @test "chezmoi template separates brew bundle from bun curl installer" {
   [ -f "${CHEZMOI_TMPL}" ]
 
-  run grep -F 'brew bundle (php, composer' "${CHEZMOI_TMPL}"
+  run grep -F 'brew bundle (mise, composer' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 
   run grep -F 'bun (curl installer)' "${CHEZMOI_TMPL}"

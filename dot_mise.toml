@@ -1,0 +1,6 @@
+# Single source of truth for Node, Python, and PHP (managed by mise).
+# https://mise.jdx.dev/configuration.html
+[tools]
+node = "22"
+python = "3.12"
+php = "8.5"

@@ -26,19 +26,19 @@ if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Homebrew
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Homebrew (same resolution order as run_once_after_prereqs.sh)
+if command -v brew >/dev/null 2>&1; then
+  eval "$(brew shellenv)"
+elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
 
 # bun (https://bun.com)
 export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
 case ":${PATH}:" in *":${BUN_INSTALL}/bin:"*) ;; *) PATH="${BUN_INSTALL}/bin:${PATH}" ;; esac
 
-# NVM
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-# Bun (optional: add to PATH if needed)
-# if [ -d "$HOME/.bun" ]; then
-#   export PATH="$HOME/.bun/bin:$PATH"
-# fi
+# mise activates from ~/.bashrc / ~/.zshrc (Node, Python, PHP per ~/.mise.toml).

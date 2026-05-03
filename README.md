@@ -1,7 +1,7 @@
 # dotfiles
 
 [![Test](https://github.com/DiegoFleitas/dotfiles/actions/workflows/test.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/test.yml)
-[![Version Drift](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml)
+[![Version drift](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml)
 
 Personal Linux/macOS environment setup with [chezmoi](https://www.chezmoi.io/), shell scripts, and versioned configs.
 
@@ -23,13 +23,13 @@ After install, run `source ~/.profile` (or open a new shell).
 - `zsh` with [oh-my-zsh](https://ohmyz.sh/)
 - Dotfiles like `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
 - Dev tooling via:
-  - [nvm](https://github.com/nvm-sh/nvm) (Node 22) + [Corepack](https://nodejs.org/api/corepack.html)
-  - [pyenv](https://github.com/pyenv/pyenv) (Python 3.12)
+  - [mise](https://mise.jdx.dev/) — Node 22, Python 3.12, and PHP 8.5 from a single [`dot_mise.toml`](dot_mise.toml) (installed as `~/.mise.toml` via chezmoi); [Corepack](https://nodejs.org/api/corepack.html) is enabled in `run_once_before_finalize.sh`
   - [Bun](https://bun.com) — official install script in `run_once_after_prereqs.sh` (not Homebrew)
-  - [Homebrew](https://brew.sh/) + Brewfile (PHP 8.5, Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
+  - [Homebrew](https://brew.sh/) + Brewfile ([mise](https://formulae.brew.sh/formula/mise), Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
 - Shell behavior:
-  - Auto-use project `.nvmrc`
-  - Auto-activate local `.venv` when present
+  - **mise** activates after Homebrew `shellenv` (see `.zshrc` / `.bashrc`)
+  - Project-local versions: mise respects `mise.toml` / tool files when you walk directories; a repo-published `dot_nvmrc` still maps to `~/.nvmrc` for tools that read it
+  - Auto-activate the nearest `.venv` (walks up from the current directory)
 - Setup scripts run in order; optional `apps.sh` stays manual
 
 ## What happens during install
@@ -37,11 +37,11 @@ After install, run `source ~/.profile` (or open a new shell).
 `chezmoi init --apply` clones this repo and runs:
 
 1. `run_once_after_prereqs.sh`
-   - apt update/upgrade, build deps, Homebrew, nvm, Bun (curl installer), oh-my-zsh, pyenv, Python 3.12, PHP 8.5 (via Brewfile)
+   - apt update/upgrade and build deps (Linux with apt), Homebrew (install if needed), Bun (curl installer), `brew bundle`, then `mise install` from `dot_mise.toml`, optional Fly.io CLI (`DOTFILES_INSTALL_FLYCTL=1`), then oh-my-zsh. Exits early if run as root.
 2. Dotfiles apply
-   - symlinks/copies for config files
+   - symlinks/copies for config files (including `~/.mise.toml`)
 3. `run_once_before_finalize.sh`
-   - default shell (`zsh`), plus brew/nvm/omz/pyenv updates
+   - default shell (`zsh`), mise toolchain refresh, Corepack, brew update, oh-my-zsh update
 
 ## Try it in Codespaces
 
@@ -76,11 +76,23 @@ WSL behavior notes:
 > [!IMPORTANT]
 > On first `chezmoi apply`, you will be prompted for git `user.name` and `user.email`. Those values are cached. To change them later, run `chezmoi apply` again or edit `~/.config/chezmoi/chezmoi.toml`.
 
+Optional **signed commits**: add a `signingKey` (GPG or SSH) under `[data.git]` in `~/.config/chezmoi/chezmoi.toml`; the generated `.gitconfig` enables `commit.gpgsign` when that key is set (see `dot_gitconfig.tmpl` in this repo).
+
+## SSH keys, API tokens, and secrets
+
+This repo does **not** store private keys or API tokens. Suggested approach:
+
+1. **SSH for Git**: generate a key with `ssh-keygen`, add the public key to your host, and use `ssh-agent` as usual.
+2. **GitHub CLI**: `gh auth login` for HTTPS and API tasks when useful.
+3. **Sensitive config**: use [chezmoi encryption](https://chezmoi.io/user-guide/frequently-asked-questions/encryption/) (age), a password manager, or keep secrets out of the repo and symlink them.
+
+Do not commit cleartext tokens in templates that push to a public remote.
+
 ## Optional apps install
 
 Run `apps.sh` after setup to install extra applications (Docker, etc.) from `apps.conf`.
 
-`apps.sh` is run manually and installs applications from `apps.conf` using system-level installers common on Debian/Ubuntu: apt, `.deb` packages, snap, apt repositories, and PPAs. Homebrew-managed developer tools are provisioned from the `Brewfile` (applied during `run_once_after_prereqs.sh` with `brew bundle`). `Bun` is installed earlier in `run_once_after_prereqs.sh` using the official curl installer; other developer tooling comes from the `Brewfile`.
+`apps.sh` is **not** run automatically by chezmoi. Run it manually to install applications from `apps.conf` using system-level installers common on Debian/Ubuntu: apt, `.deb` packages, snap, apt repositories, and PPAs. On **macOS**, use Homebrew, the Mac App Store, or vendor installers for the same apps; this repo does not run `apps.sh` targets there. Homebrew-managed developer tools are provisioned from the `Brewfile` (applied during `run_once_after_prereqs.sh` with `brew bundle`). `Bun` is installed earlier in `run_once_after_prereqs.sh` using the official curl installer; other developer tooling comes from the `Brewfile`. Bun’s install directory is added to `PATH` from `.profile`, `.zshrc`, and `.bashrc`.
 
 **Fly.io CLI** is optional. Install during `chezmoi apply` with `DOTFILES_INSTALL_FLYCTL=1` (for example `DOTFILES_INSTALL_FLYCTL=1 chezmoi apply`), or run `brew install flyctl` after setup.
 
@@ -111,49 +123,40 @@ Dry-run (prints what would be installed; does not run installs):
 
 ## Compatibility
 
-Tested on **Ubuntu 22.04.5 LTS** and newer.
+- **Linux**: Tested on **Ubuntu 22.04.5 LTS** and newer. `run_once_*.sh` and `apps.sh` target apt/snap-based environments.
+- **macOS**: Shell configs and Homebrew work on Apple Silicon and Intel; `apps.sh` is not used there (see [Optional apps install](#optional-apps-install)).
 
 ## Version management
 
-Version values live in `versions.env`:
+Tool versions live in **`dot_mise.toml`** (single source of truth; chezmoi installs it as `~/.mise.toml`). Current pins: Node **22**, Python **3.12**, PHP **8.5**.
 
-- `NODE_VERSION` (Node major line)
-- `PYTHON_VERSION` (Python line)
-- `PHP_VERSION` (PHP major.minor line; Homebrew `php`)
-- `NVM_INSTALL_VERSION` (nvm installer tag)
+Node note: keep **`dot_nvmrc`** aligned with the `node = "…"` entry so `~/.nvmrc` stays consistent for anything that reads it without mise.
 
-Node version precedence note:
-- `nvm` follows the nearest `.nvmrc` from the current directory upward.
-- A home-level `~/.nvmrc` can override your default alias in home-shell sessions.
-- Recommended if you want global consistency with this repo: set `~/.nvmrc` to `22`.
-
-Python behavior note:
-- `run_once_before_finalize.sh` checks for any installed `PYTHON_VERSION.x` (for example `3.12.x`) and skips rebuilds on routine updates.
-- To force a Python refresh intentionally, run with `DOTFILES_PYTHON_REFRESH=1 chezmoi apply`.
+Python refresh: run `DOTFILES_PYTHON_REFRESH=1 chezmoi apply` to force a reinstall of the Python version via mise (`run_once_before_finalize.sh`).
 
 ### Bump versions
 
-1. Update `versions.env` (`NODE_VERSION`, `PYTHON_VERSION`, `PHP_VERSION`, `NVM_INSTALL_VERSION` as needed)
-2. Keep `dot_nvmrc` aligned with `NODE_VERSION` (published as `~/.nvmrc`)
-3. Run:
-
-```bash
-bash scripts/check-version-drift.sh
-```
-
-4. If it passes, commit the version bump
+1. Edit `dot_mise.toml` (`node`, `python`, `php`)
+2. Update `dot_nvmrc` if you changed the Node line
+3. Update this README if you change major/minor lines so the documented numbers stay accurate
+4. Run `./scripts/test.sh` (includes contract tests for README / `dot_nvmrc` alignment)
+5. Commit the bump
 
 ### Drift protection
 
-- `scripts/check-version-drift.sh` ensures scripts/docs use centralized values
-- `.github/workflows/version-drift.yml` runs checks on push, PR, and monthly
-- `.github/renovate.json` updates:
-  - GitHub Actions versions
-  - `NVM_INSTALL_VERSION` in `versions.env` (regex manager)
+- Bats tests in `test/mise_config_contract.bats` and `test/version_drift.bats` assert config shape and alignment between `dot_mise.toml`, `dot_nvmrc`, and README
+- `.github/workflows/version-drift.yml` runs those contract tests on push, PR, and monthly
+- `.github/renovate.json` tracks GitHub Actions dependency updates
 
 ## Testing
 
-Shell tests use [bats-core](https://github.com/bats-core/bats-core).
+Shell tests use [bats-core](https://github.com/bats-core/bats-core). Behavioral checks for `run_once_*.sh` also run under **pytest** (`test_python/`) with explicit subprocess env/timeouts.
+
+Install dev deps once:
+
+```bash
+pip install -r requirements-dev.txt
+```
 
 Run locally:
 
@@ -161,19 +164,18 @@ Run locally:
 ./scripts/test.sh
 ```
 
-Direct command (if `bats` is already installed):
+Direct commands (if tools are already installed):
 
 ```bash
-bats test/
+bats --jobs 1 test/
+python3 -m pytest test_python/
 ```
 
-CI:
-- `.github/workflows/test.yml` installs Bats and runs `bats test/` on push and pull request events
+CI runs `./scripts/test.sh` on Ubuntu and macOS (see `.github/workflows/test.yml`).
 
-Current test coverage:
-- `scripts/check-version-drift.sh` passes with valid repo state
-- `scripts/check-version-drift.sh` fails when `dot_nvmrc` and `versions.env` diverge
-- `run_once_after_prereqs.sh` and `run_once_before_finalize.sh` keep using centralized version variables
+All `*.bats` files under [`test/`](test/) drive validation. They cover, among other themes: mise config and version alignment, stub-based provisioning script behavior, `apps.sh` / picker flows, Brewfile and `apps.conf` contracts, idempotency guards, and template/shell-config sanity. Browse `test/` for the current suites rather than duplicating an inventory here.
+
+If a Bats test **hangs** or a stub test **fails in odd ways** (e.g. missing `CALL_LOG` lines), read the short “footguns” note at the top of [`test/helpers/common.bash`](test/helpers/common.bash) (stub shebangs, `grep` on `PATH`, env forwarding—run a single file with `timeout 60 bats test/some.bats` while debugging).
 
 ## Troubleshooting
 
@@ -189,7 +191,7 @@ Current test coverage:
     ```bash
     chezmoi update
     ```
-  - Canonical test runner is `./scripts/test.sh` (or `bats test/` in repo root).
+  - Canonical test runner is `./scripts/test.sh` (or `bats --jobs 1 test/` in repo root).
 
 ## TL;DR (update current machine)
 
@@ -204,6 +206,7 @@ Then open a new shell (or run `source ~/.profile`), and confirm tools:
 - `zsh --version`
 - `node -v`
 - `python --version`
+- `php --version`
 
 ## TL;DR (new machine)
 
@@ -217,4 +220,5 @@ Then open a new shell (or run `source ~/.profile`), and confirm tools:
    - `zsh --version`
    - `node -v`
    - `python --version`
+   - `php --version`
 4. Optional: run `apps.sh` for extra apps (Docker, etc.)

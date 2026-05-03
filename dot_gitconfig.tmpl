@@ -5,6 +5,28 @@
   {{- $email = (index $git "email") -}}
   {{- $name = (index $git "name") -}}
 {{- end -}}
+[core]
+	editor = vim
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = false
+
+[push]
+	autoSetupRemote = true
+
 [user]
-	email = {{ $email | quote }}
 	name = {{ $name | quote }}
+	email = {{ $email | quote }}
+{{- if $git }}
+{{- with index $git "signingKey" }}
+{{- if . }}
+	signingkey = {{ . | quote }}
+
+[commit]
+	gpgsign = true
+{{- end }}
+{{- end }}
+{{- end }}

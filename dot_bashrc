@@ -74,7 +74,11 @@ esac
 
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    if test -r ~/.dircolors; then
+      eval "$(dircolors -b ~/.dircolors)"
+    else
+      eval "$(dircolors -b)"
+    fi
     alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
@@ -102,6 +106,7 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
 if [ -f ~/.bash_aliases ]; then
+    # shellcheck source=/dev/null
     . ~/.bash_aliases
 fi
 
@@ -116,53 +121,60 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# Homebrew
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Homebrew (same resolution order as run_once_after_prereqs.sh)
+if command -v brew >/dev/null 2>&1; then
+  eval "$(brew shellenv)"
+elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+elif [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [ -x /usr/local/bin/brew ]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+fi
 
 # bun (https://bun.com)
 export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
 case ":${PATH}:" in *":${BUN_INSTALL}/bin:"*) ;; *) PATH="${BUN_INSTALL}/bin:${PATH}" ;; esac
 
-# NVM
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-
-# Auto-use Node version from .nvmrc when present
-load-nvmrc() {
-  local nvmrc_path
-  nvmrc_path="$(nvm_find_nvmrc 2>/dev/null)"
-  if [ -n "$nvmrc_path" ]; then
-    local nvmrc_node_version
-    nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")" 2>/dev/null)
-    if [ "$nvmrc_node_version" = "N/A" ]; then
-      nvm install
-    elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
-      nvm use
-    fi
-  elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc 2>/dev/null)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
-    nvm use default
-  fi
-}
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }load-nvmrc"
-load-nvmrc
-
-# Pyenv
-if command -v pyenv 1>/dev/null 2>&1; then
-  eval "$(pyenv init -)"
+# mise — Node, Python, PHP (see ~/.mise.toml)
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate bash)"
+elif [ -x /opt/homebrew/bin/mise ]; then
+  eval "$(/opt/homebrew/bin/mise activate bash)"
+elif [ -x /home/linuxbrew/.linuxbrew/bin/mise ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/mise activate bash)"
+elif [ -x /usr/local/bin/mise ]; then
+  eval "$(/usr/local/bin/mise activate bash)"
 fi
 
-# Auto-activate .venv when entering a directory that has one
+# Auto-activate nearest .venv (walks up from $PWD)
+_find_nearest_venv() {
+  local dir="$PWD"
+  while true; do
+    if [[ -d "$dir/.venv" ]]; then
+      echo "$dir/.venv"
+      return 0
+    fi
+    if [[ "$dir" == "/" ]]; then
+      return 1
+    fi
+    dir="$(dirname "$dir")"
+  done
+}
+
 _autovenv() {
-  if [[ -d .venv ]] && [[ "${VIRTUAL_ENV:-}" != "$PWD/.venv" ]]; then
+  local venv_path
+  if venv_path="$(_find_nearest_venv)"; then
+    if [[ "${VIRTUAL_ENV:-}" != "$venv_path" ]]; then
+      type deactivate &>/dev/null && deactivate 2>/dev/null
+      # shellcheck source=/dev/null
+      source "${venv_path}/bin/activate"
+    fi
+  else
     type deactivate &>/dev/null && deactivate 2>/dev/null
-    source .venv/bin/activate
-  elif ! [[ -d .venv ]] && type deactivate &>/dev/null; then
-    deactivate 2>/dev/null
   fi
 }
 PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND; }_autovenv"
 _autovenv
 
-# Python alias
 alias python=python3

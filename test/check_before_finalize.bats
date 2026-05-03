@@ -1,62 +1,190 @@
 #!/usr/bin/env bats
+# Behavioral contracts for run_once_before_finalize.sh (stub-isolated HOME + PATH).
 
 load 'helpers/common.bash'
 
 setup() {
+  dotfiles_clear_stub_path_conflicts
   REPO_ROOT="$(repo_root)"
   TARGET_FILE="${REPO_ROOT}/run_once_before_finalize.sh"
+  TEST_TMPDIR="$(mktemp -d)"
+  BIN_DIR="${TEST_TMPDIR}/bin"
+  mkdir -p "${BIN_DIR}"
+  export BIN_DIR
+  CALL_LOG="${TEST_TMPDIR}/calls.log"
+  : > "${CALL_LOG}"
+  export CALL_LOG
+  export PATH="${BIN_DIR}:/bin:/usr/bin"
+  export HOME="${TEST_TMPDIR}/home"
+  mkdir -p "${HOME}/.oh-my-zsh"
+  cat >"${HOME}/.oh-my-zsh/oh-my-zsh.sh" <<'EOF'
+omz() {
+  return 0
+}
+EOF
 }
 
-@test "before_finalize sources versions.env and defaults version variables" {
-  run grep -F '[ -f "${SCRIPT_DIR}/versions.env" ] && . "${SCRIPT_DIR}/versions.env"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
+teardown() {
+  rm -rf "${TEST_TMPDIR}"
+}
 
-  run grep -F ': "${NODE_VERSION:=22}"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
+write_stub() {
+  local name="$1"
+  local content="$2"
+  printf '%s\n' "${content}" > "${BIN_DIR}/${name}"
+  chmod +x "${BIN_DIR}/${name}"
+}
 
-  run grep -F ': "${PYTHON_VERSION:=3.12}"' "${TARGET_FILE}"
+stub_dirname() {
+  write_stub "dirname" '#!/bin/bash
+path="${1:-}"
+path="${path%/}"
+if [[ "${path}" != *"/"* ]]; then echo "."; else echo "${path%/*}"; fi
+'
+}
+
+@test "before_finalize: skips chsh when WSL is detected" {
+  # is_wsl requires [ -r /proc/version ]; not present on macOS CI.
+  if [[ ! -r /proc/version ]]; then
+    skip "WSL contract requires Linux /proc/version (skipped on macOS)"
+  fi
+
+  stub_dirname
+  write_stub "zsh" '#!/bin/bash
+echo "zsh $*" >>"$CALL_LOG"
+if [[ "${1:-}" == "-f" ]] && [[ "${2:-}" == "-c" ]]; then
+  export ZSH="$HOME/.oh-my-zsh"
+  # shellcheck disable=SC1091
+  [ -f "$ZSH/oh-my-zsh.sh" ] && . "$ZSH/oh-my-zsh.sh"
+  command -v omz >/dev/null 2>&1 && omz update
+fi
+exit 0
+'
+  write_stub "grep" '#!/bin/bash
+echo "grep $*" >>"$CALL_LOG"
+if [[ "$*" == *microsoft* ]] && [[ "$*" == *proc/version* ]]; then exit 0; fi
+if [[ "$*" == */etc/shells ]]; then exit 1; fi
+if [[ "${1:-}" == "-Eq" ]]; then exit 0; fi
+exit 0
+'
+  write_stub "sudo" '#!/bin/bash
+cat >/dev/null 2>&1 || true
+echo "sudo $*" >>"$CALL_LOG"
+exit 0
+'
+  write_stub "brew" '#!/bin/bash
+echo "brew $*" >>"$CALL_LOG"
+exit 0
+'
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
+fi
+exit 0
+"
+  write_stub "corepack" '#!/bin/bash
+exit 0
+'
+
+  export SHELL=/bin/bash
+  dotfiles_run_script_clean "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"WSL detected. Skipping chsh"* ]]
+  run /usr/bin/grep -F "chsh -s" "${CALL_LOG}"
+  [ "$status" -ne 0 ]
+}
+
+@test "before_finalize: invokes chsh when not WSL" {
+  stub_dirname
+  write_stub "zsh" '#!/bin/bash
+echo "zsh $*" >>"$CALL_LOG"
+if [[ "${1:-}" == "-f" ]] && [[ "${2:-}" == "-c" ]]; then
+  export ZSH="$HOME/.oh-my-zsh"
+  # shellcheck disable=SC1091
+  [ -f "$ZSH/oh-my-zsh.sh" ] && . "$ZSH/oh-my-zsh.sh"
+  command -v omz >/dev/null 2>&1 && omz update
+fi
+exit 0
+'
+  write_stub "grep" '#!/bin/bash
+echo "grep $*" >>"$CALL_LOG"
+if [[ "$*" == *microsoft* ]] && [[ "$*" == *proc/version* ]]; then exit 1; fi
+if [[ "$*" == */etc/shells ]]; then exit 1; fi
+if [[ "${1:-}" == "-Eq" ]]; then exit 0; fi
+exit 0
+'
+  write_stub "sudo" '#!/bin/bash
+cat >/dev/null 2>&1 || true
+echo "sudo $*" >>"$CALL_LOG"
+exit 0
+'
+  write_stub "chsh" '#!/bin/bash
+echo "chsh $*" >>"$CALL_LOG"
+exit 0
+'
+  write_stub "brew" '#!/bin/bash
+echo "brew $*" >>"$CALL_LOG"
+exit 0
+'
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
+fi
+exit 0
+"
+  write_stub "corepack" '#!/bin/bash
+exit 0
+'
+
+  export SHELL=/bin/bash
+  dotfiles_run_script_clean "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+  run /usr/bin/grep -F "chsh -s" "${CALL_LOG}"
   [ "$status" -eq 0 ]
 }
 
-@test "before_finalize uses centralized Node and Python values" {
-  run grep -F 'nvm install "${NODE_VERSION}" && nvm alias default "${NODE_VERSION}"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
+@test "before_finalize: skips optional full brew upgrade by default (DOTFILES_BREW_UPGRADE)" {
+  stub_dirname
+  write_stub "zsh" '#!/bin/bash
+if [[ "${1:-}" == "-f" ]] && [[ "${2:-}" == "-c" ]]; then
+  export ZSH="$HOME/.oh-my-zsh"
+  # shellcheck disable=SC1091
+  [ -f "$ZSH/oh-my-zsh.sh" ] && . "$ZSH/oh-my-zsh.sh"
+  command -v omz >/dev/null 2>&1 && omz update
+fi
+exit 0
+'
+  write_stub "grep" '#!/bin/bash
+if [[ "$*" == *microsoft* ]] && [[ "$*" == *proc/version* ]]; then exit 1; fi
+if [[ "$*" == */etc/shells ]]; then exit 1; fi
+if [[ "${1:-}" == "-Eq" ]]; then exit 0; fi
+exit 0
+'
+  write_stub "sudo" '#!/bin/bash
+exit 0
+'
+  write_stub "chsh" '#!/bin/bash
+exit 0
+'
+  write_stub "brew" '#!/bin/bash
+echo "brew $*" >>"$CALL_LOG"
+exit 0
+'
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
+fi
+exit 0
+"
+  write_stub "corepack" '#!/bin/bash
+exit 0
+'
 
-  run grep -F 'pyenv versions --bare | grep -Eq "^${PYTHON_VERSION}(\\.|$)"' "${TARGET_FILE}"
+  export SHELL=/bin/bash
+  dotfiles_run_script_clean "${TARGET_FILE}"
   [ "$status" -eq 0 ]
-
-  run grep -F 'pyenv install "${PYTHON_VERSION}"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'DOTFILES_PYTHON_REFRESH' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-}
-
-@test "before_finalize runs in strict mode and has WSL guard for chsh" {
-  run grep -F 'set -euo pipefail' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'is_wsl() {' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'WSL detected. Skipping chsh to avoid interactive prompts.' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-}
-
-@test "before_finalize avoids implicit brew upgrades unless explicitly enabled" {
-  run grep -F 'if [ "${DOTFILES_BREW_UPGRADE:-0}" = "1" ]; then' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'Skipping brew upgrade by default (set DOTFILES_BREW_UPGRADE=1 to enable).' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-}
-
-@test "before_finalize updates oh-my-zsh without user shell rc side effects" {
-  run grep -F 'zsh -f -c' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-}
-
-@test "before_finalize includes canonical test runner hint" {
-  run grep -F 'tests: ./scripts/test.sh' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
+  [[ "$output" == *"Skipping brew upgrade by default"* ]]
 }
