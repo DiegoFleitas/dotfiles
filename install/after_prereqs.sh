@@ -33,8 +33,11 @@ if [ "${HAS_APT}" -eq 1 ]; then
 
     # Install build essentials and required dependencies
     output_message "Installing apt build dependencies..."
+    # bison/re2c: required when mise builds PHP from source (asdf-php); without bison, configure fails.
     sudo apt install -y \
       build-essential \
+      bison \
+      re2c \
       libssl-dev \
       libffi-dev \
       python3-dev \
