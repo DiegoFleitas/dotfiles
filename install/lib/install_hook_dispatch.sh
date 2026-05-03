@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Invoked only from the real filesystem (run_once wrappers locate this via CHEZMOI_* paths).
+# Invoked only via run_once_*.sh wrappers (CHEZMOI_* paths find this file).
+# Filename MUST NOT start with "run_" — chezmoi executes those as hooks with no args.
 set -euo pipefail
 
 hook="${1:?}"
@@ -16,7 +17,7 @@ case "${hook}" in
   before_finalize) exec /bin/bash "${ROOT}/install/before_finalize.sh" "$@" ;;
   after_prereqs) exec /bin/bash "${ROOT}/install/after_prereqs.sh" "$@" ;;
   *)
-    printf 'run_once_dispatch: unknown hook %q\n' "${hook}" >&2
+    printf 'install_hook_dispatch: unknown hook %q\n' "${hook}" >&2
     exit 1
     ;;
 esac

@@ -7,8 +7,8 @@ set -euo pipefail
 _here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 for _r in "${CHEZMOI_SOURCE_DIR:-}" "${CHEZMOI_WORKING_TREE:-}" "${_here}"; do
   [[ -z "${_r}" ]] && continue
-  if [[ -f "${_r}/install/lib/run_once_dispatch.sh" ]]; then
-    exec /bin/bash "${_r}/install/lib/run_once_dispatch.sh" before_finalize "$@"
+  if [[ -f "${_r}/install/lib/install_hook_dispatch.sh" ]]; then
+    exec /bin/bash "${_r}/install/lib/install_hook_dispatch.sh" before_finalize "$@"
   fi
 done
-exec /bin/bash "${_here}/install/lib/run_once_dispatch.sh" before_finalize "$@"
+exec /bin/bash "${_here}/install/lib/install_hook_dispatch.sh" before_finalize "$@"

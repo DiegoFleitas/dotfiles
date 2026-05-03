@@ -47,6 +47,12 @@ setup() {
   [ "$status" -ne 0 ]
 }
 
+@test "install/lib has no run_* files (chezmoi runs those as scripts without hook args)" {
+  local found
+  found="$(find "${REPO_ROOT}/install/lib" -mindepth 1 -maxdepth 1 -name 'run_*' -print 2>/dev/null || true)"
+  [ -z "${found}" ]
+}
+
 @test "canonical test runner remains scripts/test.sh (bats + pytest)" {
   run grep -F 'bats --jobs 1 test/' "${TEST_RUNNER_FILE}"
   [ "$status" -eq 0 ]
