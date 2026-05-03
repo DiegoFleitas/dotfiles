@@ -3,4 +3,4 @@
 [tools]
 node = "22"
 python = "3.12"
-php = "8.5"
+php = "8.4"

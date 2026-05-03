@@ -59,6 +59,9 @@ output_message "Continuing setup process..."
 
 # mise: install/refresh toolchains from dot_mise.toml
 if command -v mise &> /dev/null; then
+  _script_dir="${BASH_SOURCE[0]%/*}"
+  # shellcheck source=mise_install_env.sh
+  source "${_script_dir}/mise_install_env.sh"
   if [ "${DOTFILES_PYTHON_REFRESH}" = "1" ]; then
     output_message "DOTFILES_PYTHON_REFRESH=1, forcing Python reinstall via mise..."
     mise install -f python

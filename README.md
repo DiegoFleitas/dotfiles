@@ -23,7 +23,7 @@ After install, run `source ~/.profile` (or open a new shell).
 - `zsh` with [oh-my-zsh](https://ohmyz.sh/)
 - Dotfiles like `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
 - Dev tooling via:
-  - [mise](https://mise.jdx.dev/) — Node 22, Python 3.12, and PHP 8.5 from a single [`dot_mise.toml`](dot_mise.toml) (installed as `~/.mise.toml` via chezmoi); [Corepack](https://nodejs.org/api/corepack.html) is enabled in `run_once_before_finalize.sh`
+  - [mise](https://mise.jdx.dev/) — Node 22, Python 3.12, and PHP 8.4 from a single [`dot_mise.toml`](dot_mise.toml) (installed as `~/.mise.toml` via chezmoi); [Corepack](https://nodejs.org/api/corepack.html) is enabled in `run_once_before_finalize.sh`
   - [Bun](https://bun.com) — official install script in `run_once_after_prereqs.sh` (not Homebrew)
   - [Homebrew](https://brew.sh/) + Brewfile ([mise](https://formulae.brew.sh/formula/mise), Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
 - Shell behavior:
@@ -128,7 +128,7 @@ Dry-run (prints what would be installed; does not run installs):
 
 ## Version management
 
-Tool versions live in **`dot_mise.toml`** (single source of truth; chezmoi installs it as `~/.mise.toml`). Current pins: Node **22**, Python **3.12**, PHP **8.5**.
+Tool versions live in **`dot_mise.toml`** (single source of truth; chezmoi installs it as `~/.mise.toml`). Current pins: Node **22**, Python **3.12**, PHP **8.4**.
 
 Node note: keep **`dot_nvmrc`** aligned with the `node = "…"` entry so `~/.nvmrc` stays consistent for anything that reads it without mise.
 

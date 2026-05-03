@@ -46,20 +46,27 @@ if [ "${HAS_APT}" -eq 1 ]; then
       wget \
       zsh
 
-    # mise often builds PHP from source (asdf-php); keep these separate from general deps.
+    # mise / asdf-php: compiles PHP (e.g. 8.4.x) from source. Global flags use libxml, gd, intl,
+    # pdo_pgsql, zip, onig, etc. Linux branch also passes --with-gettext; buildconf wants autotools;
+    # plocate fixes `locate` (used to find libjpeg/libpng paths). ext/sodium needs libsodium-dev.
     # https://github.com/asdf-community/asdf-php/issues/202
     output_message "Installing apt dependencies for PHP source builds (mise / asdf-php)..."
     sudo apt install -y \
       autoconf \
+      automake \
+      libtool \
       pkg-config \
       bison \
       re2c \
+      gettext \
+      plocate \
       libxml2-dev \
       libcurl4-openssl-dev \
       libgd-dev \
       libicu-dev \
       libonig-dev \
       libpq-dev \
+      libsodium-dev \
       libzip-dev
 else
     output_message "apt not available. Skipping apt dependency setup."
@@ -129,6 +136,9 @@ if ! command -v mise &> /dev/null; then
 fi
 
 output_message "Installing toolchains via mise (see dot_mise.toml)..."
+# shellcheck source=mise_install_env.sh
+_script_dir="${BASH_SOURCE[0]%/*}"
+source "${_script_dir}/mise_install_env.sh"
 mise install -y
 # Expose shims in this non-interactive script (same effect as `mise activate` in a shell).
 # shellcheck disable=SC1090
