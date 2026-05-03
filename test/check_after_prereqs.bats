@@ -21,8 +21,6 @@ setup() {
   unset DOTFILES_INSTALL_FLYCTL 2>/dev/null || true
   export HOME="${TEST_TMPDIR}/home"
   mkdir -p "${HOME}"
-  mkdir -p "${HOME}/.nvm"
-  printf '%s\n' "# stub nvm.sh" > "${HOME}/.nvm/nvm.sh"
   : > "${HOME}/.bashrc"
 }
 
@@ -74,8 +72,17 @@ echo "brew $*" >>"$CALL_LOG"
 case "${1:-}" in shellenv|bundle|install) exit 0 ;; esac
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-if [ "${1:-}" = "versions" ]; then printf "%s\n" "* 3.12.0"; exit 0; fi
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
+fi
+exit 0
+"
+  write_stub "node" '#!/bin/bash
+exit 0
+'
+  write_stub "php" '#!/bin/bash
 exit 0
 '
   write_stub "grep" '#!/bin/bash
@@ -134,8 +141,17 @@ echo "brew $*" >>"$CALL_LOG"
 case "${1:-}" in shellenv|bundle|install) exit 0 ;; esac
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-if [ "${1:-}" = "versions" ]; then printf "%s\n" "* 3.12.0"; exit 0; fi
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
+fi
+exit 0
+"
+  write_stub "node" '#!/bin/bash
+exit 0
+'
+  write_stub "php" '#!/bin/bash
 exit 0
 '
   write_stub "grep" '#!/bin/bash
@@ -174,11 +190,7 @@ exit 98
   [ "${bundle_line}" -lt "${fly_line}" ]
 }
 
-@test "after_prereqs: output references PYTHON_VERSION from versions.env" {
-  # shellcheck disable=SC1091
-  source "${REPO_ROOT}/versions.env"
-  pv="${PYTHON_VERSION}"
-
+@test "after_prereqs: output references mise toolchain install" {
   mkdir -p "${HOME}/.oh-my-zsh"
   mkdir -p "${HOME}/.bun/bin"
   printf '%s\n' '#!/bin/bash' >"${HOME}/.bun/bin/bun"
@@ -206,10 +218,19 @@ exit 0
 case "${1:-}" in shellenv|bundle|install) exit 0 ;; esac
 exit 0
 '
-  write_stub "pyenv" "#!/bin/bash
-if [ \"\${1:-}\" = \"versions\" ]; then printf '%s\\n' '* 3.11.9'; exit 0; fi
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
+fi
 exit 0
 "
+  write_stub "node" '#!/bin/bash
+exit 0
+'
+  write_stub "php" '#!/bin/bash
+exit 0
+'
   write_stub "grep" '#!/bin/bash
 if [ "${1:-}" = "-q" ] && [ -n "${2:-}" ]; then
   pattern="${2:-}"
@@ -237,5 +258,5 @@ exit 98
 
   dotfiles_run_script_clean "${TARGET_FILE}"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"Installing Python ${pv}"* ]]
+  [[ "$output" == *"Installing toolchains via mise"* ]]
 }

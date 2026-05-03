@@ -16,12 +16,6 @@ setup() {
   export CALL_LOG
   export PATH="${BIN_DIR}:/bin:/usr/bin"
   export HOME="${TEST_TMPDIR}/home"
-  mkdir -p "${HOME}/.nvm"
-  cat >"${HOME}/.nvm/nvm.sh" <<'EOF'
-nvm() {
-  return 0
-}
-EOF
   mkdir -p "${HOME}/.oh-my-zsh"
   cat >"${HOME}/.oh-my-zsh/oh-my-zsh.sh" <<'EOF'
 omz() {
@@ -77,12 +71,14 @@ exit 0
 echo "brew $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-echo "pyenv $*" >>"$CALL_LOG"
-if [[ "${1:-}" == "versions" ]] && [[ "${2:-}" == "--bare" ]]; then
-  echo "3.12.0"
-  exit 0
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
 fi
+exit 0
+"
+  write_stub "corepack" '#!/bin/bash
 exit 0
 '
 
@@ -126,12 +122,14 @@ exit 0
 echo "brew $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-echo "pyenv $*" >>"$CALL_LOG"
-if [[ "${1:-}" == "versions" ]] && [[ "${2:-}" == "--bare" ]]; then
-  echo "3.12.0"
-  exit 0
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
 fi
+exit 0
+"
+  write_stub "corepack" '#!/bin/bash
 exit 0
 '
 
@@ -169,11 +167,14 @@ exit 0
 echo "brew $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-if [[ "${1:-}" == "versions" ]] && [[ "${2:-}" == "--bare" ]]; then
-  echo "3.12.0"
-  exit 0
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
 fi
+exit 0
+"
+  write_stub "corepack" '#!/bin/bash
 exit 0
 '
 

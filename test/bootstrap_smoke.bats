@@ -54,10 +54,10 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
-@test "Brewfile installs php and composer via Homebrew but not bun" {
+@test "Brewfile installs mise and composer via Homebrew but not bun" {
   [ -f "${BREWFILE}" ]
 
-  run grep -F 'brew "php"' "${BREWFILE}"
+  run grep -F 'brew "mise"' "${BREWFILE}"
   [ "$status" -eq 0 ]
 
   run grep -F 'brew "composer"' "${BREWFILE}"
@@ -70,7 +70,7 @@ setup() {
 @test "chezmoi template separates brew bundle from bun curl installer" {
   [ -f "${CHEZMOI_TMPL}" ]
 
-  run grep -F 'brew bundle (php, composer' "${CHEZMOI_TMPL}"
+  run grep -F 'brew bundle (mise, composer' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 
   run grep -F 'bun (curl installer)' "${CHEZMOI_TMPL}"

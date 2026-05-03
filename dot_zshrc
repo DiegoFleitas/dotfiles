@@ -115,93 +115,18 @@ fi
 export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
 case ":${PATH}:" in *":${BUN_INSTALL}/bin:"*) ;; *) PATH="${BUN_INSTALL}/bin:${PATH}" ;; esac
 
-# nvm — lazy-loaded (first use of nvm/node/npm/npx/corepack or directory hook)
-export NVM_DIR="$HOME/.nvm"
+# mise — Node, Python, PHP (see ~/.mise.toml)
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+elif [ -x /opt/homebrew/bin/mise ]; then
+  eval "$(/opt/homebrew/bin/mise activate zsh)"
+elif [ -x /home/linuxbrew/.linuxbrew/bin/mise ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/mise activate zsh)"
+elif [ -x /usr/local/bin/mise ]; then
+  eval "$(/usr/local/bin/mise activate zsh)"
+fi
 
-_nvm_lazy_load() {
-  [[ -n "${NVM_LAZY_LOADED:-}" ]] && return 0
-  [[ -s "$NVM_DIR/nvm.sh" ]] || return 1
-  unset -f nvm node npm npx corepack 2>/dev/null
-  \. "$NVM_DIR/nvm.sh"
-  [[ -s "$NVM_DIR/bash_completion" ]] && \. "$NVM_DIR/bash_completion"
-  NVM_LAZY_LOADED=1
-  return 0
-}
-
-nvm() {
-  _nvm_lazy_load || return 1
-  nvm "$@"
-}
-node() {
-  _nvm_lazy_load || return 1
-  command node "$@"
-}
-npm() {
-  _nvm_lazy_load || return 1
-  command npm "$@"
-}
-npx() {
-  _nvm_lazy_load || return 1
-  command npx "$@"
-}
-corepack() {
-  _nvm_lazy_load || return 1
-  command corepack "$@"
-}
-
-# Calling nvm use automatically in a directory with a .nvmrc file
-autoload -U add-zsh-hook
-load-nvmrc() {
-  _nvm_lazy_load || return 0
-  local nvmrc_path
-  nvmrc_path="$(nvm_find_nvmrc)"
-
-  if [ -n "$nvmrc_path" ]; then
-    local nvmrc_node_version
-    nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
-
-    if [ "$nvmrc_node_version" = "N/A" ]; then
-      nvm install
-    elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
-      nvm use
-    fi
-  elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
-    echo "Reverting to nvm default version"
-    nvm use default
-  fi
-}
-add-zsh-hook chpwd load-nvmrc
-load-nvmrc
-
-# pyenv — lazy-loaded (first use of pyenv/python/pip)
-_pyenv_lazy_load() {
-  [[ -n "${PYENV_LAZY_LOADED:-}" ]] && return 0
-  command -v pyenv >/dev/null 2>&1 || return 1
-  unset -f pyenv python3 pip pip3 2>/dev/null
-  unalias python 2>/dev/null
-  eval "$(command pyenv init -)"
-  PYENV_LAZY_LOADED=1
-  return 0
-}
-
-pyenv() {
-  _pyenv_lazy_load || return 1
-  command pyenv "$@"
-}
-python3() {
-  _pyenv_lazy_load 2>/dev/null || true
-  command python3 "$@"
-}
-pip() {
-  _pyenv_lazy_load 2>/dev/null || true
-  command pip "$@"
-}
-pip3() {
-  _pyenv_lazy_load 2>/dev/null || true
-  command pip3 "$@"
-}
-
-# Auto-activate nearest .venv (walks up from $PWD like .nvmrc discovery)
+# Auto-activate nearest .venv (walks up from $PWD)
 _find_nearest_venv() {
   local dir="$PWD"
   while true; do

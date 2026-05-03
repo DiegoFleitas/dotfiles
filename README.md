@@ -1,7 +1,7 @@
 # dotfiles
 
 [![Test](https://github.com/DiegoFleitas/dotfiles/actions/workflows/test.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/test.yml)
-[![Version Drift](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml)
+[![Version drift](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml/badge.svg)](https://github.com/DiegoFleitas/dotfiles/actions/workflows/version-drift.yml)
 
 Personal Linux/macOS environment setup with [chezmoi](https://www.chezmoi.io/), shell scripts, and versioned configs.
 
@@ -23,14 +23,13 @@ After install, run `source ~/.profile` (or open a new shell).
 - `zsh` with [oh-my-zsh](https://ohmyz.sh/)
 - Dotfiles like `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
 - Dev tooling via:
-  - [nvm](https://github.com/nvm-sh/nvm) (Node 22) + [Corepack](https://nodejs.org/api/corepack.html) — `npm` comes from the nvm-managed Node install, not a separate Homebrew `npm` package
-  - [pyenv](https://github.com/pyenv/pyenv) (Python 3.12)
+  - [mise](https://mise.jdx.dev/) — Node 22, Python 3.12, and PHP 8.5 from a single [`dot_mise.toml`](dot_mise.toml) (installed as `~/.mise.toml` via chezmoi); [Corepack](https://nodejs.org/api/corepack.html) is enabled in `run_once_before_finalize.sh`
   - [Bun](https://bun.com) — official install script in `run_once_after_prereqs.sh` (not Homebrew)
-  - [Homebrew](https://brew.sh/) + Brewfile (PHP 8.5, Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
+  - [Homebrew](https://brew.sh/) + Brewfile ([mise](https://formulae.brew.sh/formula/mise), Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more)
 - Shell behavior:
-  - **nvm** and **pyenv** are lazy-loaded on first use (faster shell startup)
-  - Auto-use project `.nvmrc` (walks up directories)
-  - Auto-activate the nearest `.venv` (walks up from the current directory, like `.nvmrc` discovery)
+  - **mise** activates after Homebrew `shellenv` (see `.zshrc` / `.bashrc`)
+  - Project-local versions: mise respects `mise.toml` / tool files when you walk directories; a repo-published `dot_nvmrc` still maps to `~/.nvmrc` for tools that read it
+  - Auto-activate the nearest `.venv` (walks up from the current directory)
 - Setup scripts run in order; optional `apps.sh` stays manual
 
 ## What happens during install
@@ -38,11 +37,11 @@ After install, run `source ~/.profile` (or open a new shell).
 `chezmoi init --apply` clones this repo and runs:
 
 1. `run_once_after_prereqs.sh`
-   - apt update/upgrade, build deps, Homebrew, nvm, Bun (curl installer), oh-my-zsh, pyenv, Python 3.12, PHP 8.5 (via Brewfile)
+   - apt update/upgrade, build deps, Homebrew, Bun (curl installer), oh-my-zsh, `brew bundle` (includes mise), then `mise install` from `dot_mise.toml`
 2. Dotfiles apply
-   - symlinks/copies for config files
+   - symlinks/copies for config files (including `~/.mise.toml`)
 3. `run_once_before_finalize.sh`
-   - default shell (`zsh`), plus brew/nvm/omz/pyenv updates
+   - default shell (`zsh`), mise toolchain refresh, Corepack, brew update, oh-my-zsh update
 
 ## Try it in Codespaces
 
@@ -129,41 +128,25 @@ Dry-run (prints what would be installed; does not run installs):
 
 ## Version management
 
-Version values live in `versions.env`:
+Tool versions live in **`dot_mise.toml`** (single source of truth; chezmoi installs it as `~/.mise.toml`). Current pins: Node **22**, Python **3.12**, PHP **8.5**.
 
-- `NODE_VERSION` (Node major line)
-- `PYTHON_VERSION` (Python line)
-- `PHP_VERSION` (PHP major.minor line; Homebrew `php`)
-- `NVM_INSTALL_VERSION` (nvm installer tag)
+Node note: keep **`dot_nvmrc`** aligned with the `node = "…"` entry so `~/.nvmrc` stays consistent for anything that reads it without mise.
 
-Node version precedence note:
-- `nvm` follows the nearest `.nvmrc` from the current directory upward.
-- A home-level `~/.nvmrc` can override your default alias in home-shell sessions.
-- Recommended if you want global consistency with this repo: set `~/.nvmrc` to `22`.
-
-Python behavior note:
-- `run_once_before_finalize.sh` checks for any installed `PYTHON_VERSION.x` (for example `3.12.x`) and skips rebuilds on routine updates.
-- To force a Python refresh intentionally, run with `DOTFILES_PYTHON_REFRESH=1 chezmoi apply`.
+Python refresh: run `DOTFILES_PYTHON_REFRESH=1 chezmoi apply` to force a reinstall of the Python version via mise (`run_once_before_finalize.sh`).
 
 ### Bump versions
 
-1. Update `versions.env` (`NODE_VERSION`, `PYTHON_VERSION`, `PHP_VERSION`, `NVM_INSTALL_VERSION` as needed)
-2. Keep `dot_nvmrc` aligned with `NODE_VERSION` (published as `~/.nvmrc`)
-3. Run:
-
-```bash
-bash scripts/check-version-drift.sh
-```
-
-4. If it passes, commit the version bump
+1. Edit `dot_mise.toml` (`node`, `python`, `php`)
+2. Update `dot_nvmrc` if you changed the Node line
+3. Update this README if you change major/minor lines so the documented numbers stay accurate
+4. Run `./scripts/test.sh` (includes contract tests for README / `dot_nvmrc` alignment)
+5. Commit the bump
 
 ### Drift protection
 
-- `scripts/check-version-drift.sh` ensures scripts/docs use centralized values
-- `.github/workflows/version-drift.yml` runs checks on push, PR, and monthly
-- `.github/renovate.json` updates:
-  - GitHub Actions versions
-  - `NVM_INSTALL_VERSION` in `versions.env` (regex manager)
+- Bats tests in `test/mise_config_contract.bats` and `test/version_drift.bats` assert config shape and alignment between `dot_mise.toml`, `dot_nvmrc`, and README
+- `.github/workflows/version-drift.yml` runs those contract tests on push, PR, and monthly
+- `.github/renovate.json` tracks GitHub Actions dependency updates
 
 ## Testing
 
@@ -190,7 +173,7 @@ python3 -m pytest test_python/
 
 CI runs `./scripts/test.sh` on Ubuntu and macOS (see `.github/workflows/test.yml`).
 
-All `*.bats` files under [`test/`](test/) drive validation. They cover, among other themes: version drift (`scripts/check-version-drift.sh`), stub-based provisioning script behavior, `apps.sh` / picker flows, Brewfile and `apps.conf` contracts, idempotency guards, and template/shell-config sanity. Browse `test/` for the current suites rather than duplicating an inventory here.
+All `*.bats` files under [`test/`](test/) drive validation. They cover, among other themes: mise config and version alignment, stub-based provisioning script behavior, `apps.sh` / picker flows, Brewfile and `apps.conf` contracts, idempotency guards, and template/shell-config sanity. Browse `test/` for the current suites rather than duplicating an inventory here.
 
 If a Bats test **hangs** or a stub test **fails in odd ways** (e.g. missing `CALL_LOG` lines), read the short “footguns” note at the top of [`test/helpers/common.bash`](test/helpers/common.bash) (stub shebangs, `grep` on `PATH`, env forwarding—run a single file with `timeout 60 bats test/some.bats` while debugging).
 
@@ -223,6 +206,7 @@ Then open a new shell (or run `source ~/.profile`), and confirm tools:
 - `zsh --version`
 - `node -v`
 - `python --version`
+- `php --version`
 
 ## TL;DR (new machine)
 
@@ -236,4 +220,5 @@ Then open a new shell (or run `source ~/.profile`), and confirm tools:
    - `zsh --version`
    - `node -v`
    - `python --version`
+   - `php --version`
 4. Optional: run `apps.sh` for extra apps (Docker, etc.)

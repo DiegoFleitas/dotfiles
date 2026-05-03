@@ -9,12 +9,9 @@ output_message() {
   echo "===================================="
 }
 
-# Load centralized tool versions
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck disable=SC1091
-[ -f "${SCRIPT_DIR}/versions.env" ] && . "${SCRIPT_DIR}/versions.env"
-: "${NODE_VERSION:=22}"
-: "${PYTHON_VERSION:=3.12}"
+# shellcheck disable=SC2034
+export MISE_CONFIG_FILE="${SCRIPT_DIR}/dot_mise.toml"
 : "${DOTFILES_PYTHON_REFRESH:=0}"
 
 is_wsl() {
@@ -54,21 +51,24 @@ fi
 # Instead of exec zsh, run the remaining commands in the current shell
 output_message "Continuing setup process..."
 
-# Check if nvm is available before updating
-if [ -f "$HOME/.nvm/nvm.sh" ]; then
-  output_message "Loading and updating nvm..."
-  export NVM_DIR="$HOME/.nvm"
-  # shellcheck disable=SC1091
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-  # shellcheck disable=SC1091
-  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-  nvm install "${NODE_VERSION}" && nvm alias default "${NODE_VERSION}"
+# mise: install/refresh toolchains from dot_mise.toml
+if command -v mise &> /dev/null; then
+  if [ "${DOTFILES_PYTHON_REFRESH}" = "1" ]; then
+    output_message "DOTFILES_PYTHON_REFRESH=1, forcing Python reinstall via mise..."
+    mise install -f python
+  fi
+  output_message "Ensuring mise toolchains are installed..."
+  mise install -y
+  # shellcheck disable=SC1090
+  eval "$(mise env -s bash 2>/dev/null)" || true
   if command -v corepack &>/dev/null; then
     output_message "Enabling Corepack (pnpm/yarn with Node)..."
     corepack enable
+  else
+    output_message "corepack not found on PATH; skip (run after opening a new shell with mise activate)."
   fi
 else
-  output_message "nvm not found. Skipping nvm update."
+  output_message "mise not found. Skipping toolchain update (run run_once_after_prereqs or brew install mise)."
 fi
 
 # Check if brew is available before updating
@@ -95,24 +95,6 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
   '
 else
   output_message "oh-my-zsh not found. Skipping oh-my-zsh update."
-fi
-
-# Check if pyenv is available before updating
-if command -v pyenv &> /dev/null; then
-  output_message "Updating pyenv and Python versions..."
-  brew upgrade pyenv
-  if pyenv versions --bare | grep -Eq "^${PYTHON_VERSION}(\\.|$)"; then
-    output_message "Python ${PYTHON_VERSION}.x already present; skipping rebuild. Set DOTFILES_PYTHON_REFRESH=1 to force refresh."
-    if [ "${DOTFILES_PYTHON_REFRESH}" = "1" ]; then
-      output_message "DOTFILES_PYTHON_REFRESH=1, refreshing Python ${PYTHON_VERSION}..."
-      pyenv install "${PYTHON_VERSION}"
-    fi
-  else
-    output_message "No Python ${PYTHON_VERSION}.x found. Installing..."
-    pyenv install "${PYTHON_VERSION}"
-  fi
-else
-  output_message "pyenv not found. Skipping pyenv update."
 fi
 
 output_message "Setup completed successfully! (You can run apps.sh now; tests: ./scripts/test.sh)"

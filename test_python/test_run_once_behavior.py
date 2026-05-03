@@ -13,22 +13,31 @@ import pytest
 RUN_TIMEOUT = 90
 
 
-def load_versions_env(repo: Path) -> dict[str, str]:
-    out: dict[str, str] = {}
-    p = repo / "versions.env"
-    for line in p.read_text().splitlines():
-        s = line.strip()
-        if not s or s.startswith("#") or "=" not in s:
-            continue
-        k, _, v = s.partition("=")
-        out[k.strip()] = v.strip()
-    return out
-
-
 def write_stub(bin_dir: Path, name: str, content: str) -> None:
     p = bin_dir / name
     p.write_text(textwrap.dedent(content).lstrip("\n"), encoding="utf-8")
     p.chmod(0o755)
+
+
+def write_mise_stubs(bin_dir: Path, call_log: str, *, with_corepack: bool = False) -> None:
+    """Stubs for `mise install` / `mise env -s bash` and toolchain shims used by run_once_*.sh."""
+    bd = str(bin_dir)
+    write_stub(
+        bin_dir,
+        "mise",
+        f"""\
+        #!/bin/bash
+        echo "mise $*" >>"{call_log}"
+        if [ "${{1:-}}" = "env" ] && [ "${{2:-}}" = "-s" ]; then
+          echo 'export PATH="{bd}:$PATH"'
+        fi
+        exit 0
+        """,
+    )
+    for name in ("node", "python3", "php"):
+        write_stub(bin_dir, name, "#!/bin/bash\nexit 0\n")
+    if with_corepack:
+        write_stub(bin_dir, "corepack", "#!/bin/bash\nexit 0\n")
 
 
 def run_script_clean(
@@ -72,8 +81,6 @@ def test_after_prereqs_brew_bundle_failure_aborts(repo_root: Path, tmp_path: Pat
     bun_bin.write_text("#!/bin/bash\n", encoding="utf-8")
     bun_bin.chmod(0o755)
 
-    (home / ".nvm").mkdir(parents=True)
-    (home / ".nvm" / "nvm.sh").write_text("# stub nvm.sh\n", encoding="utf-8")
     (home / ".bashrc").write_text("", encoding="utf-8")
 
     call_log = str(tmp_path / "calls.log")
@@ -123,15 +130,6 @@ def test_after_prereqs_brew_bundle_failure_aborts(repo_root: Path, tmp_path: Pat
     )
     write_stub(
         bin_dir,
-        "pyenv",
-        """\
-        #!/bin/bash
-        if [ "${1:-}" = "versions" ]; then printf "%s\\n" "* 3.12.0"; exit 0; fi
-        exit 0
-        """,
-    )
-    write_stub(
-        bin_dir,
         "grep",
         """\
         #!/bin/bash
@@ -159,8 +157,6 @@ def test_after_prereqs_bun_installer_curl_logged(repo_root: Path, tmp_path: Path
     bin_dir.mkdir()
     home = tmp_path / "home"
     (home / ".oh-my-zsh").mkdir(parents=True)
-    (home / ".nvm").mkdir()
-    (home / ".nvm" / "nvm.sh").write_text("# stub\n", encoding="utf-8")
     (home / ".bashrc").write_text("", encoding="utf-8")
 
     call_log = str(tmp_path / "calls.log")
@@ -206,15 +202,7 @@ def test_after_prereqs_bun_installer_curl_logged(repo_root: Path, tmp_path: Path
         exit 0
         """,
     )
-    write_stub(
-        bin_dir,
-        "pyenv",
-        """\
-        #!/bin/bash
-        if [ "${1:-}" = "versions" ]; then printf "%s\\n" "* 3.12.0"; exit 0; fi
-        exit 0
-        """,
-    )
+    write_mise_stubs(bin_dir, call_log)
     write_stub(bin_dir, "grep", "#!/bin/bash\nexit 1\n")
     for n in ("python3", "wget", "zsh", "chsh"):
         write_stub(bin_dir, n, "#!/bin/bash\nexit 0\n")
@@ -251,8 +239,6 @@ def test_after_prereqs_bundle_before_flyctl(repo_root: Path, tmp_path: Path) -> 
     (home / ".bun" / "bin").mkdir(parents=True)
     (home / ".bun" / "bin" / "bun").write_text("#!/bin/bash\n", encoding="utf-8")
     (home / ".bun" / "bin" / "bun").chmod(0o755)
-    (home / ".nvm").mkdir(parents=True)
-    (home / ".nvm" / "nvm.sh").write_text("# stub\n", encoding="utf-8")
     (home / ".bashrc").write_text("", encoding="utf-8")
 
     call_log = str(tmp_path / "calls.log")
@@ -290,15 +276,7 @@ def test_after_prereqs_bundle_before_flyctl(repo_root: Path, tmp_path: Path) -> 
         exit 0
         """,
     )
-    write_stub(
-        bin_dir,
-        "pyenv",
-        """\
-        #!/bin/bash
-        if [ "${1:-}" = "versions" ]; then printf "%s\\n" "* 3.12.0"; exit 0; fi
-        exit 0
-        """,
-    )
+    write_mise_stubs(bin_dir, call_log)
     write_stub(
         bin_dir,
         "grep",
@@ -339,10 +317,7 @@ def test_after_prereqs_bundle_before_flyctl(repo_root: Path, tmp_path: Path) -> 
     assert bundle_i < fly_i
 
 
-def test_after_prereqs_python_message(repo_root: Path, tmp_path: Path) -> None:
-    versions = load_versions_env(repo_root)
-    pv = versions["PYTHON_VERSION"]
-
+def test_after_prereqs_mise_toolchain_message(repo_root: Path, tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     home = tmp_path / "home"
@@ -350,8 +325,6 @@ def test_after_prereqs_python_message(repo_root: Path, tmp_path: Path) -> None:
     (home / ".bun" / "bin").mkdir(parents=True)
     (home / ".bun" / "bin" / "bun").write_text("#!/bin/bash\n", encoding="utf-8")
     (home / ".bun" / "bin" / "bun").chmod(0o755)
-    (home / ".nvm").mkdir(parents=True)
-    (home / ".nvm" / "nvm.sh").write_text("# stub\n", encoding="utf-8")
     (home / ".bashrc").write_text("", encoding="utf-8")
 
     call_log = str(tmp_path / "calls.log")
@@ -388,15 +361,7 @@ def test_after_prereqs_python_message(repo_root: Path, tmp_path: Path) -> None:
         exit 0
         """,
     )
-    write_stub(
-        bin_dir,
-        "pyenv",
-        r"""\
-        #!/bin/bash
-        if [ "${1:-}" = "versions" ]; then printf '%s\n' '* 3.11.9'; exit 0; fi
-        exit 0
-        """,
-    )
+    write_mise_stubs(bin_dir, call_log)
     write_stub(
         bin_dir,
         "grep",
@@ -410,7 +375,7 @@ def test_after_prereqs_python_message(repo_root: Path, tmp_path: Path) -> None:
         exit 2
         """,
     )
-    for n in ("python3", "wget", "zsh", "chsh"):
+    for n in ("wget", "zsh", "chsh"):
         write_stub(bin_dir, n, "#!/bin/bash\nexit 0\n")
     write_stub(bin_dir, "sudo", "#!/bin/bash\nexit 98\n")
     write_stub(
@@ -430,16 +395,16 @@ def test_after_prereqs_python_message(repo_root: Path, tmp_path: Path) -> None:
         call_log=call_log,
     )
     assert cp.returncode == 0
-    assert f"Installing Python {pv}" in (cp.stdout + cp.stderr)
+    out = cp.stdout + cp.stderr
+    assert "Installing toolchains via mise" in out
+    assert "mise install -y" in Path(call_log).read_text()
 
 
 def test_before_finalize_wsl_skips_chsh(repo_root: Path, tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     home = tmp_path / "home"
-    (home / ".nvm").mkdir()
-    (home / ".nvm" / "nvm.sh").write_text("nvm() { return 0; }\n", encoding="utf-8")
-    (home / ".oh-my-zsh").mkdir()
+    (home / ".oh-my-zsh").mkdir(parents=True)
     (home / ".oh-my-zsh" / "oh-my-zsh.sh").write_text("omz() { return 0; }\n", encoding="utf-8")
 
     call_log = str(tmp_path / "calls.log")
@@ -500,19 +465,7 @@ def test_before_finalize_wsl_skips_chsh(repo_root: Path, tmp_path: Path) -> None
         exit 0
         """,
     )
-    write_stub(
-        bin_dir,
-        "pyenv",
-        f"""\
-        #!/bin/bash
-        echo "pyenv $*" >>"{call_log}"
-        if [[ "${{1:-}}" == "versions" ]] && [[ "${{2:-}}" == "--bare" ]]; then
-          echo "3.12.0"
-          exit 0
-        fi
-        exit 0
-        """,
-    )
+    write_mise_stubs(bin_dir, call_log, with_corepack=True)
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(
@@ -531,9 +484,7 @@ def test_before_finalize_chsh_when_not_wsl(repo_root: Path, tmp_path: Path) -> N
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     home = tmp_path / "home"
-    (home / ".nvm").mkdir()
-    (home / ".nvm" / "nvm.sh").write_text("nvm() { return 0; }\n", encoding="utf-8")
-    (home / ".oh-my-zsh").mkdir()
+    (home / ".oh-my-zsh").mkdir(parents=True)
     (home / ".oh-my-zsh" / "oh-my-zsh.sh").write_text("omz() { return 0; }\n", encoding="utf-8")
 
     call_log = str(tmp_path / "calls.log")
@@ -603,19 +554,7 @@ def test_before_finalize_chsh_when_not_wsl(repo_root: Path, tmp_path: Path) -> N
         exit 0
         """,
     )
-    write_stub(
-        bin_dir,
-        "pyenv",
-        f"""\
-        #!/bin/bash
-        echo "pyenv $*" >>"{call_log}"
-        if [[ "${{1:-}}" == "versions" ]] && [[ "${{2:-}}" == "--bare" ]]; then
-          echo "3.12.0"
-          exit 0
-        fi
-        exit 0
-        """,
-    )
+    write_mise_stubs(bin_dir, call_log, with_corepack=True)
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(
@@ -633,9 +572,7 @@ def test_before_finalize_skips_brew_upgrade_by_default(repo_root: Path, tmp_path
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     home = tmp_path / "home"
-    (home / ".nvm").mkdir()
-    (home / ".nvm" / "nvm.sh").write_text("nvm() { return 0; }\n", encoding="utf-8")
-    (home / ".oh-my-zsh").mkdir()
+    (home / ".oh-my-zsh").mkdir(parents=True)
     (home / ".oh-my-zsh" / "oh-my-zsh.sh").write_text("omz() { return 0; }\n", encoding="utf-8")
 
     call_log = str(tmp_path / "calls.log")
@@ -686,18 +623,7 @@ def test_before_finalize_skips_brew_upgrade_by_default(repo_root: Path, tmp_path
         exit 0
         """,
     )
-    write_stub(
-        bin_dir,
-        "pyenv",
-        """\
-        #!/bin/bash
-        if [[ "${1:-}" == "versions" ]] && [[ "${2:-}" == "--bare" ]]; then
-          echo "3.12.0"
-          exit 0
-        fi
-        exit 0
-        """,
-    )
+    write_mise_stubs(bin_dir, call_log, with_corepack=True)
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(

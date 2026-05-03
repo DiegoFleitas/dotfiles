@@ -13,7 +13,7 @@ mkdir -p "$BACKUP_DIR"
 
 echo "Backing up dotfiles to $BACKUP_DIR"
 
-for f in .bashrc .zshrc .profile .gitconfig .nvmrc; do
+for f in .bashrc .zshrc .profile .gitconfig .nvmrc .mise.toml; do
   if [[ -e "$HOME/$f" ]]; then
     cp "$HOME/$f" "$BACKUP_DIR/$f"
     echo "  $f"

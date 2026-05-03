@@ -25,9 +25,7 @@ setup() {
   export HOME="${TEST_TMPDIR}/home"
   mkdir -p "${HOME}"
 
-  # Prevent nvm install path.
-  mkdir -p "${HOME}/.nvm"
-  printf '%s\n' "# stub nvm.sh" > "${HOME}/.nvm/nvm.sh"
+  # mise installs toolchains from dot_mise.toml (SCRIPT_DIR); no HOME stubs needed.
 
   # Provide a bashrc file in case the script tries to read/append.
   : > "${HOME}/.bashrc"
@@ -142,12 +140,17 @@ case "${1:-}" in
 esac
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-echo "pyenv $*" >>"$CALL_LOG"
-if [ "${1:-}" = "versions" ]; then
-  printf "%s\n" "* 3.12.0 (set by stub)"
-  exit 0
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
 fi
+exit 0
+"
+  write_stub "node" '#!/bin/bash
+exit 0
+'
+  write_stub "php" '#!/bin/bash
 exit 0
 '
   write_stub "grep" '#!/bin/bash
@@ -267,12 +270,17 @@ exit 0
 echo "brew $*" >>"$CALL_LOG"
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-echo "pyenv $*" >>"$CALL_LOG"
-if [ "${1:-}" = "versions" ]; then
-  printf "%s\n" "* 3.12.0 (set by stub)"
-  exit 0
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
 fi
+exit 0
+"
+  write_stub "node" '#!/bin/bash
+exit 0
+'
+  write_stub "php" '#!/bin/bash
 exit 0
 '
   write_stub "python3" '#!/bin/bash
@@ -397,11 +405,17 @@ exit 0
   write_stub "brew" '#!/bin/bash
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-if [ "${1:-}" = "versions" ]; then
-  printf "%s\n" "* 3.12.0 (set by stub)"
-  exit 0
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
 fi
+exit 0
+"
+  write_stub "node" '#!/bin/bash
+exit 0
+'
+  write_stub "php" '#!/bin/bash
 exit 0
 '
   write_stub "python3" '#!/bin/bash
@@ -475,23 +489,23 @@ case "${1:-}" in
 esac
 exit 0
 '
-  write_stub "pyenv" '#!/bin/bash
-echo "pyenv $*" >>"$CALL_LOG"
-if [ "${1:-}" = "versions" ]; then
-  printf "%s\n" "* 3.12.0 (set by stub)"
-  exit 0
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
 fi
+exit 0
+"
+  write_stub "node" '#!/bin/bash
+exit 0
+'
+  write_stub "php" '#!/bin/bash
 exit 0
 '
   write_stub "python3" '#!/bin/bash
 exit 0
 '
   write_stub "grep" '#!/bin/bash
-if [ "${1:-}" = "-q" ] && [ -n "${2:-}" ]; then
-  if [ "${2:-}" = "3.12" ]; then
-    exit 0
-  fi
-fi
 exit 1
 '
   write_stub "chsh" '#!/bin/bash
