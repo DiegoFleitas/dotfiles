@@ -20,7 +20,9 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 : "${PHP_VERSION:=8.5}"
 : "${NVM_INSTALL_VERSION:=v0.40.3}"
 
-if [ "$(uname -s)" = "Linux" ] && command -v apt >/dev/null 2>&1; then
+if [ "${DOTFILES_DISABLE_APT:-0}" = "1" ]; then
+    HAS_APT=0
+elif [ "$(uname -s)" = "Linux" ] && command -v apt >/dev/null 2>&1; then
     HAS_APT=1
 else
     HAS_APT=0
@@ -84,13 +86,15 @@ if ! command -v brew &> /dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-# Add brew to user's path.
-if [ -x "/home/linuxbrew/.linuxbrew/bin/brew" ]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-elif [ -x "/opt/homebrew/bin/brew" ]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [ -x "/usr/local/bin/brew" ]; then
-    eval "$(/usr/local/bin/brew shellenv)"
+# Add brew to user's path (skip fixed-path eval when stubbing `brew` on PATH; see Bats tests).
+if [ "${DOTFILES_BREW_USE_PATH_ONLY:-0}" != "1" ]; then
+  if [ -x "/home/linuxbrew/.linuxbrew/bin/brew" ]; then
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  elif [ -x "/opt/homebrew/bin/brew" ]; then
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [ -x "/usr/local/bin/brew" ]; then
+      eval "$(/usr/local/bin/brew shellenv)"
+  fi
 fi
 
 ### Development tools
