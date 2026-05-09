@@ -41,6 +41,12 @@ setup() {
 
   run grep -F 'WSL detected. Skipping chsh to avoid interactive prompts.' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
+
+  run grep -F 'CODESPACE_NAME' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'GitHub Codespaces detected. Skipping chsh' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
 }
 
 @test "before_finalize avoids implicit brew upgrades unless explicitly enabled" {

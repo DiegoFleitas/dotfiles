@@ -570,6 +570,96 @@ def test_before_finalize_chsh_when_not_wsl(repo_root: Path, tmp_path: Path) -> N
     assert "chsh -s" in Path(call_log).read_text()
 
 
+@pytest.mark.skipif(sys.platform != "linux", reason="WSL detection requires /proc/version (Linux only)")
+def test_before_finalize_codespaces_skips_chsh(repo_root: Path, tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    home = tmp_path / "home"
+    (home / ".oh-my-zsh").mkdir(parents=True)
+    (home / ".oh-my-zsh" / "oh-my-zsh.sh").write_text("omz() { return 0; }\n", encoding="utf-8")
+
+    call_log = str(tmp_path / "calls.log")
+    Path(call_log).write_text("", encoding="utf-8")
+
+    write_stub(
+        bin_dir,
+        "dirname",
+        """\
+        #!/bin/bash
+        path="${1:-}"
+        path="${path%/}"
+        if [[ "${path}" != *"/"* ]]; then echo "."; else echo "${path%/*}"; fi
+        """,
+    )
+    write_stub(
+        bin_dir,
+        "zsh",
+        f"""\
+        #!/bin/bash
+        echo "zsh $*" >>"{call_log}"
+        if [[ "${{1:-}}" == "-f" ]] && [[ "${{2:-}}" == "-c" ]]; then
+          export ZSH="$HOME/.oh-my-zsh"
+          [ -f "$ZSH/oh-my-zsh.sh" ] && . "$ZSH/oh-my-zsh.sh"
+          command -v omz >/dev/null 2>&1 && omz update
+        fi
+        exit 0
+        """,
+    )
+    write_stub(
+        bin_dir,
+        "grep",
+        f"""\
+        #!/bin/bash
+        echo "grep $*" >>"{call_log}"
+        if [[ "$*" == *microsoft* ]] && [[ "$*" == *proc/version* ]]; then exit 1; fi
+        if [[ "$*" == */etc/shells ]]; then exit 1; fi
+        if [[ "${{1:-}}" == "-Eq" ]]; then exit 0; fi
+        exit 0
+        """,
+    )
+    write_stub(
+        bin_dir,
+        "sudo",
+        f"""\
+        #!/bin/bash
+        cat >/dev/null 2>&1 || true
+        echo "sudo $*" >>"{call_log}"
+        exit 0
+        """,
+    )
+    write_stub(
+        bin_dir,
+        "chsh",
+        f"""\
+        #!/bin/bash
+        echo "chsh $*" >>"{call_log}"
+        exit 0
+        """,
+    )
+    write_stub(
+        bin_dir,
+        "brew",
+        f"""\
+        #!/bin/bash
+        echo "brew $*" >>"{call_log}"
+        exit 0
+        """,
+    )
+    write_mise_stubs(bin_dir, call_log, with_corepack=True)
+
+    path = f"{bin_dir}:/bin:/usr/bin"
+    cp = run_script_clean(
+        repo_root / "install" / "before_finalize.sh",
+        home=str(home),
+        path=path,
+        call_log=call_log,
+        extra_env={"SHELL": "/bin/bash", "CODESPACE_NAME": "unit-test-codespace"},
+    )
+    assert cp.returncode == 0
+    assert "GitHub Codespaces detected. Skipping chsh" in (cp.stdout + cp.stderr)
+    assert "chsh -s" not in Path(call_log).read_text()
+
+
 def test_before_finalize_skips_brew_upgrade_by_default(repo_root: Path, tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()

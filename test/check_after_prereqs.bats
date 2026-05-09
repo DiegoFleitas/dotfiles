@@ -86,6 +86,9 @@ setup() {
 
   run grep -F '[ "${DOTFILES_INSTALL_OHMYZSH:-1}" = "1" ]' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
+
+  run grep -F 'CODESPACE_NAME' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
 }
 
 @test "after_prereqs runs brew bundle before optional flyctl install" {

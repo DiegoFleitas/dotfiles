@@ -45,6 +45,8 @@ fi
 if [ "${SHELL:-}" != "${ZSH_BIN}" ]; then
   if is_wsl; then
     output_message "WSL detected. Skipping chsh to avoid interactive prompts."
+  elif [ -n "${CODESPACE_NAME:-}" ]; then
+    output_message "GitHub Codespaces detected. Skipping chsh (requires password in this environment)."
   else
     chsh -s "${ZSH_BIN}"
     output_message "Default shell changed to Zsh. Please log out and log back in for changes to take effect."

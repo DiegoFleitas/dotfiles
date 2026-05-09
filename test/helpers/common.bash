@@ -55,6 +55,7 @@ dotfiles_run_script_clean() {
   [[ -n "${DOTFILES_PYTHON_REFRESH+x}" ]] && env_cmd+=("DOTFILES_PYTHON_REFRESH=${DOTFILES_PYTHON_REFRESH}")
   [[ -n "${NVM_DIR+x}" ]] && env_cmd+=("NVM_DIR=${NVM_DIR}")
   [[ -n "${DOTFILES_TEST_BUN_INSTALL+x}" ]] && env_cmd+=("BUN_INSTALL=${DOTFILES_TEST_BUN_INSTALL}")
+  [[ -n "${CODESPACE_NAME+x}" ]] && env_cmd+=("CODESPACE_NAME=${CODESPACE_NAME}")
 
   # Use /bin/bash so macOS CI runners can execute tests (/usr/bin/bash is often absent).
   # shellcheck disable=SC2068

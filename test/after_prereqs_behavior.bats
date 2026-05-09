@@ -448,6 +448,113 @@ exit 98
   [ "$status" -eq 0 ]
 }
 
+@test "after_prereqs installs oh-my-zsh and skips chsh on GitHub Codespaces" {
+  rm -rf "${HOME}/.oh-my-zsh"
+  : >"${HOME}/.bashrc"
+
+  export CODESPACE_NAME="test-codespace"
+
+  write_stub "uname" '#!/bin/bash
+echo "Linux"
+'
+
+  write_stub "dirname" '#!/bin/bash
+path="${1:-}"
+path="${path%/}"
+if [[ "${path}" != *"/"* ]]; then
+  echo "."
+else
+  echo "${path%/*}"
+fi
+'
+
+  write_stub "id" '#!/bin/bash
+if [ "${1:-}" = "-u" ]; then
+  echo 1000
+  exit 0
+fi
+echo 1000
+'
+
+  # Non-WSL: microsoft grep fails; Codespaces branch uses CODESPACE_NAME.
+  write_stub "grep" '#!/bin/bash
+if [ "${1:-}" = "-qi" ] && [ "${2:-}" = "microsoft" ] && [ "${3:-}" = "/proc/version" ]; then
+  exit 1
+fi
+if [ "${1:-}" = "-qxF" ] && [ "${2:-}" = "exec zsh" ]; then
+  file="${3:-}"
+  [ -f "${file}" ] || exit 1
+  while IFS= read -r line; do
+    [ "${line}" = "exec zsh" ] && exit 0
+  done < "${file}"
+  exit 1
+fi
+exit 1
+'
+
+  write_stub "git" '#!/bin/bash
+exit 0
+'
+  write_stub "curl" '#!/bin/bash
+printf "%s\n" "echo OMZ_INSTALLER_RAN"
+exit 0
+'
+
+  stub_bash_forwarder
+
+  write_stub "which" '#!/bin/bash
+if [ "${1:-}" = "zsh" ]; then
+  echo "${BIN_DIR}/zsh"
+  exit 0
+fi
+exit 1
+'
+  write_stub "zsh" '#!/bin/bash
+exit 0
+'
+  write_stub "chsh" '#!/bin/bash
+echo "chsh $*" >>"$CALL_LOG"
+exit 0
+'
+
+  write_stub "brew" '#!/bin/bash
+exit 0
+'
+  write_stub "mise" "#!/bin/bash
+echo \"mise \$*\" >>\"\$CALL_LOG\"
+if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
+  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
+fi
+exit 0
+"
+  write_stub "node" '#!/bin/bash
+exit 0
+'
+  write_stub "php" '#!/bin/bash
+exit 0
+'
+  write_stub "python3" '#!/bin/bash
+exit 0
+'
+  write_stub "wget" '#!/bin/bash
+exit 0
+'
+  write_stub "sudo" '#!/bin/bash
+exit 98
+'
+
+  dotfiles_run_script_clean "${TARGET_FILE}"
+  unset CODESPACE_NAME
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Installing oh-my-zsh..."* ]]
+
+  run /usr/bin/grep -F "chsh " "${CALL_LOG}"
+  [ "$status" -ne 0 ]
+
+  run /usr/bin/grep -nFx "exec zsh" "${HOME}/.bashrc"
+  [ "$status" -eq 0 ]
+}
+
 @test "after_prereqs installs flyctl when DOTFILES_INSTALL_FLYCTL=1 and CLI absent" {
   mkdir -p "${HOME}/.oh-my-zsh"
 

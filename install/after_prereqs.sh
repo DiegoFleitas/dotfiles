@@ -178,6 +178,11 @@ if [ "${DOTFILES_INSTALL_OHMYZSH:-1}" = "1" ]; then
             if [ -f "$HOME/.bashrc" ] && ! grep -qxF "exec zsh" "$HOME/.bashrc"; then
                 echo "exec zsh" >> "$HOME/.bashrc"
             fi
+        elif [ -n "${CODESPACE_NAME:-}" ]; then
+            # GitHub Codespaces: chsh prompts for a password and blocks non-interactive bootstrap
+            if [ -f "$HOME/.bashrc" ] && ! grep -qxF "exec zsh" "$HOME/.bashrc"; then
+                echo "exec zsh" >> "$HOME/.bashrc"
+            fi
         else
             if command -v chsh >/dev/null 2>&1; then
                 chsh -s "$(command -v zsh)"
