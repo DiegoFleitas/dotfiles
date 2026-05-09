@@ -31,15 +31,24 @@ if [ "$(id -u)" -eq 0 ]; then
    exit 1
 fi
 
+# Non-interactive apt for headless/Codespaces/chezmoi: avoid dpkg conffile prompts (e.g. sshd_config).
+apt_noninteractive() {
+    sudo DEBIAN_FRONTEND=noninteractive apt-get \
+        -y -q \
+        -o Dpkg::Options::="--force-confdef" \
+        -o Dpkg::Options::="--force-confold" \
+        "$@"
+}
+
 ### Essentials
 if [ "${DOTFILES_INSTALL_APT:-1}" = "1" ] && [ "${HAS_APT}" -eq 1 ]; then
     # Update packages
     output_message "Updating apt packages..."
-    sudo apt update && sudo apt upgrade -y
+    apt_noninteractive update && apt_noninteractive upgrade
 
     # Install build essentials and required dependencies
     output_message "Installing apt build dependencies..."
-    sudo apt install -y \
+    apt_noninteractive install \
       build-essential \
       libssl-dev \
       libffi-dev \
@@ -64,7 +73,7 @@ fi
 if ! command -v git &> /dev/null; then
     output_message "Installing git..."
     if [ "${DOTFILES_INSTALL_APT:-1}" = "1" ] && [ "${HAS_APT}" -eq 1 ]; then
-        sudo apt install git -y
+        apt_noninteractive install git
     else
         output_message "Package manager for git not detected. Install git manually."
     fi
@@ -74,7 +83,7 @@ fi
 if ! command -v curl &> /dev/null; then
     output_message "Installing curl..."
     if [ "${DOTFILES_INSTALL_APT:-1}" = "1" ] && [ "${HAS_APT}" -eq 1 ]; then
-        sudo apt install curl -y
+        apt_noninteractive install curl
     else
         output_message "Package manager for curl not detected. Install curl manually."
     fi

@@ -74,6 +74,17 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "after_prereqs uses non-interactive apt-get (avoids dpkg conffile prompts in headless envs)" {
+  run grep -F 'apt_noninteractive()' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'DEBIAN_FRONTEND=noninteractive apt-get' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F -- '--force-confold' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
 @test "after_prereqs gates apt brew bun and oh-my-zsh on DOTFILES_INSTALL_* with default 1" {
   run grep -F '[ "${DOTFILES_INSTALL_APT:-1}" = "1" ] && [ "${HAS_APT}" -eq 1 ]' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
