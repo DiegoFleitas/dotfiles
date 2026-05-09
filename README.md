@@ -64,7 +64,7 @@ To apply these dotfiles to all new Codespaces:
 3. Turn on **Automatically install dotfiles**
 4. Create a new Codespace from any repo
 
-Codespaces clones this repo and runs `bootstrap.sh` (which triggers the same chezmoi install above).
+Codespaces clones this repo and runs the first matching installer (`install.sh`, then `install`, then `bootstrap.sh`, …). This repo ships **`install.sh`** so Codespaces does not treat the **`install/`** directory as the `install` hook (that produced `Permission denied`). `install.sh` delegates to `bootstrap.sh` (chezmoi install + apply).
 
 Changes in this repo only affect **new** Codespaces.
 

@@ -27,6 +27,18 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "install.sh exists for Codespaces dotfiles order and delegates to bootstrap.sh" {
+  INSTALL_SH="${REPO_ROOT}/install.sh"
+  [ -f "${INSTALL_SH}" ]
+  [ -x "${INSTALL_SH}" ]
+
+  run grep -F 'bootstrap.sh' "${INSTALL_SH}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'exec ' "${INSTALL_SH}"
+  [ "$status" -eq 0 ]
+}
+
 @test "finalize script keeps WSL path non-interactive" {
   run grep -F 'if is_wsl; then' "${FINALIZE_FILE}"
   [ "$status" -eq 0 ]
