@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# System deps, brew bundle, nvm, bun, oh-my-zsh, pyenv (invoked by chezmoi run_once_after_prereqs or directly).
+# System deps, brew bundle, nvm, bun, oh-my-zsh, pyenv (invoked by chezmoi run_once_after_010_prereqs or directly).
 
 # Function to display messages with separators
 output_message() {

@@ -46,12 +46,13 @@ After install, run `source ~/.profile` (or open a new shell).
 
 `chezmoi init --apply` clones this repo and runs:
 
-1. `run_once_after_prereqs.sh` (from `run_once_after_prereqs.sh.tmpl`; runs `install/after_prereqs.sh`)
-   - optional steps via one-time chezmoi prompts; then apt, Homebrew, nvm, Bun, oh-my-zsh, pyenv, Brewfile, etc. as enabled
-2. Dotfiles apply
-   - symlinks/copies for config files
-3. `run_once_before_finalize.sh` (from `run_once_before_finalize.sh.tmpl`; runs `install/before_finalize.sh`)
-   - default shell (`zsh`), plus brew/nvm/omz/pyenv updates as enabled
+1. **Dotfiles apply** — symlinks/copies for config files (and any `run_once_before_*` scripts, if present)
+2. `run_once_after_010_prereqs.sh` (from `run_once_after_010_prereqs.sh.tmpl`; runs `install/after_prereqs.sh`)
+   — optional steps via one-time chezmoi prompts; then apt, Homebrew, nvm, Bun, oh-my-zsh, pyenv, Brewfile, etc. as enabled
+3. `run_once_after_090_finalize.sh` (from `run_once_after_090_finalize.sh.tmpl`; runs `install/before_finalize.sh`)
+   — default shell (`zsh`) where possible, plus brew/nvm/omz/pyenv updates as enabled
+
+Scripts use the `run_once_after_*` prefix so they run **after** managed files are written; numeric prefixes enforce **prereqs → finalize**. (Older `run_once_before_finalize` ran in the wrong phase and saw no Homebrew yet.)
 
 ## Try it in Codespaces
 
@@ -78,7 +79,7 @@ wsl --install -d ubuntu
 ```
 
 WSL behavior notes:
-- `install/before_finalize.sh` (via the `run_once_before_finalize` hook) skips `chsh` on WSL to avoid interactive prompts during `chezmoi apply`/`chezmoi update`.
+- `install/before_finalize.sh` (via the `run_once_after_090_finalize` hook) skips `chsh` on WSL and in GitHub Codespaces to avoid interactive prompts during `chezmoi apply`/`chezmoi update`.
 - To start in zsh automatically on WSL terminals, keep `exec zsh` in your `~/.bashrc`.
 
 ## Git identity prompt

@@ -50,8 +50,8 @@ setup() {
 @test "repo has no legacy finalize.bats or /tmp helper paths" {
   run grep -nE 'finalize\.bats|/tmp/helpers/common\.bash' \
     "${REPO_ROOT}/.chezmoi.toml.tmpl" \
-    "${REPO_ROOT}/run_once_after_prereqs.sh.tmpl" \
-    "${REPO_ROOT}/run_once_before_finalize.sh.tmpl" \
+    "${REPO_ROOT}/run_once_after_010_prereqs.sh.tmpl" \
+    "${REPO_ROOT}/run_once_after_090_finalize.sh.tmpl" \
     "${REPO_ROOT}/scripts/test.sh"
   [ "$status" -ne 0 ]
 

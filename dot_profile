@@ -26,7 +26,7 @@ if [ -d "$HOME/.local/bin" ] ; then
     PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Homebrew (same resolution order as run_once_after_prereqs.sh)
+# Homebrew (same resolution order as run_once_after_010_prereqs.sh)
 if command -v brew >/dev/null 2>&1; then
   eval "$(brew shellenv)"
 elif [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
