@@ -2,8 +2,8 @@
 # https://mise.jdx.dev/configuration.html
 #
 # PHP: prebuilt "ubi:adwinying/php" avoids compiling php-src on Linux/WSL (OOM-prone final link).
-# To use source builds instead, replace with: php = "8.4.x" (asdf-php) and keep after_prereqs apt PHP deps.
+# To use source builds instead, replace with: php = "8.5.x" (asdf-php) and keep after_prereqs apt PHP deps.
 [tools]
-node = "22"
+node = "24"
 python = "3.12"
-"ubi:adwinying/php" = "8.4.20"
+"ubi:adwinying/php" = "8.5"

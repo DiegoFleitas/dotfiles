@@ -1,4 +1,4 @@
-# subprocess-based behavioral tests for run_once_*.sh (see test/check_*_prereqs.bats).
+# subprocess-based behavioral tests for install/*.sh (see test/check_*_prereqs.bats).
 # Explicit env + timeouts; avoids Bats `run` capture path for the same scenarios.
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ def write_stub(bin_dir: Path, name: str, content: str) -> None:
 
 
 def write_mise_stubs(bin_dir: Path, call_log: str, *, with_corepack: bool = False) -> None:
-    """Stubs for `mise install` / `mise env -s bash` and toolchain shims used by run_once_*.sh."""
+    """Stubs for `mise install` / `mise env -s bash` and toolchain shims used by install/*.sh."""
     bd = str(bin_dir)
     write_stub(
         bin_dir,
@@ -62,7 +62,7 @@ def run_script_clean(
     if extra_env:
         env.update(extra_env)
     return subprocess.run(
-        ["/bin/bash", "--noprofile", "--norc", str(script)],
+        ["/bin/bash", "--noprofile", "--norc", "-e", str(script)],
         env=env,
         cwd=script.parent,
         capture_output=True,
@@ -147,7 +147,7 @@ def test_after_prereqs_brew_bundle_failure_aborts(repo_root: Path, tmp_path: Pat
     write_stub(bin_dir, "sudo", "#!/bin/bash\nexit 98\n")
 
     path = f"{bin_dir}:/bin:/usr/bin"
-    target = repo_root / "run_once_after_prereqs.sh"
+    target = repo_root / "install" / "after_prereqs.sh"
     cp = run_script_clean(target, home=str(home), path=path, call_log=call_log)
     assert cp.returncode != 0
     assert "brew bundle" in Path(call_log).read_text()
@@ -222,7 +222,7 @@ def test_after_prereqs_bun_installer_curl_logged(repo_root: Path, tmp_path: Path
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(
-        repo_root / "run_once_after_prereqs.sh",
+        repo_root / "install" / "after_prereqs.sh",
         home=str(home),
         path=path,
         call_log=call_log,
@@ -305,7 +305,7 @@ def test_after_prereqs_bundle_before_flyctl(repo_root: Path, tmp_path: Path) -> 
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(
-        repo_root / "run_once_after_prereqs.sh",
+        repo_root / "install" / "after_prereqs.sh",
         home=str(home),
         path=path,
         call_log=call_log,
@@ -390,7 +390,7 @@ def test_after_prereqs_mise_toolchain_message(repo_root: Path, tmp_path: Path) -
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(
-        repo_root / "run_once_after_prereqs.sh",
+        repo_root / "install" / "after_prereqs.sh",
         home=str(home),
         path=path,
         call_log=call_log,
@@ -471,7 +471,7 @@ def test_before_finalize_wsl_skips_chsh(repo_root: Path, tmp_path: Path) -> None
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(
-        repo_root / "run_once_before_finalize.sh",
+        repo_root / "install" / "before_finalize.sh",
         home=str(home),
         path=path,
         call_log=call_log,
@@ -560,7 +560,7 @@ def test_before_finalize_chsh_when_not_wsl(repo_root: Path, tmp_path: Path) -> N
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(
-        repo_root / "run_once_before_finalize.sh",
+        repo_root / "install" / "before_finalize.sh",
         home=str(home),
         path=path,
         call_log=call_log,
@@ -629,7 +629,7 @@ def test_before_finalize_skips_brew_upgrade_by_default(repo_root: Path, tmp_path
 
     path = f"{bin_dir}:/bin:/usr/bin"
     cp = run_script_clean(
-        repo_root / "run_once_before_finalize.sh",
+        repo_root / "install" / "before_finalize.sh",
         home=str(home),
         path=path,
         call_log=call_log,

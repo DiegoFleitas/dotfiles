@@ -27,6 +27,18 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "install.sh exists for Codespaces dotfiles order and delegates to bootstrap.sh" {
+  INSTALL_SH="${REPO_ROOT}/install.sh"
+  [ -f "${INSTALL_SH}" ]
+  [ -x "${INSTALL_SH}" ]
+
+  run grep -F 'bootstrap.sh' "${INSTALL_SH}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'exec ' "${INSTALL_SH}"
+  [ "$status" -eq 0 ]
+}
+
 @test "finalize script keeps WSL path non-interactive" {
   run grep -F 'if is_wsl; then' "${FINALIZE_FILE}"
   [ "$status" -eq 0 ]
@@ -38,19 +50,13 @@ setup() {
 @test "repo has no legacy finalize.bats or /tmp helper paths" {
   run grep -nE 'finalize\.bats|/tmp/helpers/common\.bash' \
     "${REPO_ROOT}/.chezmoi.toml.tmpl" \
-    "${REPO_ROOT}/run_once_after_prereqs.sh" \
-    "${REPO_ROOT}/run_once_before_finalize.sh" \
+    "${REPO_ROOT}/run_once_after_prereqs.sh.tmpl" \
+    "${REPO_ROOT}/run_once_before_finalize.sh.tmpl" \
     "${REPO_ROOT}/scripts/test.sh"
   [ "$status" -ne 0 ]
 
   run grep -RnF '/tmp/helpers/common.bash' "${REPO_ROOT}/test"  --exclude=bootstrap_smoke.bats
   [ "$status" -ne 0 ]
-}
-
-@test "install/lib has no run_* files (chezmoi runs those as scripts without hook args)" {
-  local found
-  found="$(find "${REPO_ROOT}/install/lib" -mindepth 1 -maxdepth 1 -name 'run_*' -print 2>/dev/null || true)"
-  [ -z "${found}" ]
 }
 
 @test "canonical test runner remains scripts/test.sh (bats + pytest)" {
@@ -80,6 +86,40 @@ setup() {
   [ "$status" -eq 0 ]
 
   run grep -F 'bun (curl installer)' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+}
+
+@test "chezmoi template gates prompts on .chezmoi.interactive for Codespaces compatibility" {
+  [ -f "${CHEZMOI_TMPL}" ]
+
+  run grep -F '{{ if .chezmoi.interactive }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'promptStringOnce . "git.name"' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'promptStringOnce . "git.email"' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'promptBoolOnce . "install.flyctl"' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+}
+
+@test "chezmoi template seeds non-interactive defaults matching install/* gates" {
+  [ -f "${CHEZMOI_TMPL}" ]
+
+  run grep -F '{{ $gitName := "" }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '{{ $gitEmail := "" }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  for var in instApt instBrew instBun instMise instOmzsh; do
+    run grep -F "{{ \$${var} := true }}" "${CHEZMOI_TMPL}"
+    [ "$status" -eq 0 ]
+  done
+
+  run grep -F '{{ $instFlyctl := false }}' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 }
 
