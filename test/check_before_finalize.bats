@@ -11,7 +11,7 @@ setup() {
   run grep -F '[ -f "${REPO_ROOT}/versions.env" ] && . "${REPO_ROOT}/versions.env"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
-  run grep -F ': "${NODE_VERSION:=22}"' "${TARGET_FILE}"
+  run grep -F ': "${NODE_VERSION:=24}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
   run grep -F ': "${PYTHON_VERSION:=3.12}"' "${TARGET_FILE}"

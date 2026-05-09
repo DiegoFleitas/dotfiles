@@ -8,9 +8,9 @@ Personal Linux/macOS environment setup with [chezmoi](https://www.chezmoi.io/), 
 [![chezmoi](https://img.shields.io/badge/chezmoi-dotfiles-1B5E8A?logo=chezmoi&logoColor=white&style=flat-square)](https://www.chezmoi.io/)
 [![Zsh](https://img.shields.io/badge/Zsh-shell-4EAA25?logo=zsh&logoColor=white&style=flat-square)](https://www.zsh.org/)
 [![mise](https://img.shields.io/badge/mise-tool%20versions-000000?logo=mise&logoColor=white&style=flat-square)](https://mise.jdx.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white&style=flat-square)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white&style=flat-square)](https://nodejs.org/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white&style=flat-square)](https://www.python.org/)
-[![PHP](https://img.shields.io/badge/PHP-8.4.20-777BB4?logo=php&logoColor=white&style=flat-square)](https://www.php.net/)
+[![PHP](https://img.shields.io/badge/PHP-8.5-777BB4?logo=php&logoColor=white&style=flat-square)](https://www.php.net/)
 [![Bun](https://img.shields.io/badge/Bun-runtime-000000?logo=bun&logoColor=white&style=flat-square)](https://bun.com/)
 [![Homebrew](https://img.shields.io/badge/Homebrew-packages-FBB040?logo=homebrew&logoColor=black&style=flat-square)](https://brew.sh/)
 
@@ -32,9 +32,9 @@ After install, run `source ~/.profile` (or open a new shell).
 - `zsh` with [oh-my-zsh](https://ohmyz.sh/)
 - Dotfiles like `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
 - Dev tooling via:
-  - [nvm](https://github.com/nvm-sh/nvm) (Node 22) + [Corepack](https://nodejs.org/api/corepack.html)
+  - [nvm](https://github.com/nvm-sh/nvm) (Node 24) + [Corepack](https://nodejs.org/api/corepack.html)
   - [pyenv](https://github.com/pyenv/pyenv) (Python 3.12)
-  - PHP 8.4.20 via [mise](https://mise.jdx.dev/) ([`ubi:adwinying/php`](https://github.com/adwinying/php) in [`dot_mise.toml`](dot_mise.toml))
+  - PHP 8.5 via [mise](https://mise.jdx.dev/) ([`ubi:adwinying/php`](https://github.com/adwinying/php) in [`dot_mise.toml`](dot_mise.toml))
   - [Bun](https://bun.com) — official install script in `install/after_prereqs.sh` (not Homebrew)
   - [Homebrew](https://brew.sh/) + Brewfile (mise, Composer, yarn, pnpm, [biome](https://biomejs.dev/), awscli, [ruff](https://docs.astral.sh/ruff/), [uv](https://docs.astral.sh/uv/), and more); PHP runtime via [mise](https://mise.jdx.dev/) + [`dot_mise.toml`](dot_mise.toml)
 - Shell behavior:
@@ -129,7 +129,7 @@ Tested on **Ubuntu 22.04.5 LTS** and newer.
 
 Version values live in `versions.env`:
 
-- `NODE_VERSION` (Node major line)
+- `NODE_VERSION` (Node major line; matches `dot_nvmrc` / `~/.nvmrc`)
 - `PYTHON_VERSION` (Python line)
 - `PHP_VERSION` (PHP line; should match the pin in `dot_mise.toml`)
 - `NVM_INSTALL_VERSION` (nvm installer tag)
@@ -137,7 +137,7 @@ Version values live in `versions.env`:
 Node version precedence note:
 - `nvm` follows the nearest `.nvmrc` from the current directory upward.
 - A home-level `~/.nvmrc` can override your default alias in home-shell sessions.
-- Recommended if you want global consistency with this repo: set `~/.nvmrc` to `22`.
+- Recommended if you want global consistency with this repo: set `~/.nvmrc` to `24`.
 
 Python behavior note:
 - `install/before_finalize.sh` checks for any installed `PYTHON_VERSION.x` (for example `3.12.x`) and skips rebuilds on routine updates.

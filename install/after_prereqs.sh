@@ -12,9 +12,9 @@ SCRIPT_DIR="$(cd -- "${BASH_SOURCE[0]%/*}" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck disable=SC1091
 [ -f "${REPO_ROOT}/versions.env" ] && . "${REPO_ROOT}/versions.env"
-: "${NODE_VERSION:=22}"
+: "${NODE_VERSION:=24}"
 : "${PYTHON_VERSION:=3.12}"
-: "${PHP_VERSION:=8.4.20}"
+: "${PHP_VERSION:=8.5}"
 : "${NVM_INSTALL_VERSION:=v0.40.3}"
 
 if [ "${DOTFILES_DISABLE_APT:-0}" = "1" ]; then

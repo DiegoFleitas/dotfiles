@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd -- "${BASH_SOURCE[0]%/*}" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck disable=SC1091
 [ -f "${REPO_ROOT}/versions.env" ] && . "${REPO_ROOT}/versions.env"
-: "${NODE_VERSION:=22}"
+: "${NODE_VERSION:=24}"
 : "${PYTHON_VERSION:=3.12}"
 : "${DOTFILES_PYTHON_REFRESH:=0}"
 
