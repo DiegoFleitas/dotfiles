@@ -8,5 +8,5 @@ export DOTFILES_INSTALL_MISE="{{ .install.mise | ternary "1" "0" }}"
 export DOTFILES_INSTALL_OHMYZSH="{{ .install.ohmyzsh | ternary "1" "0" }}"
 export DOTFILES_INSTALL_FLYCTL="{{ .install.flyctl | ternary "1" "0" }}"
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-exec /bin/bash "${SCRIPT_DIR}/install/after_prereqs.sh" "$@"
+# Chezmoi may run this script from a temp dir; BASH_SOURCE is not the repo root.
+exec /bin/bash "{{ .chezmoi.sourceDir }}/install/after_prereqs.sh" "$@"
