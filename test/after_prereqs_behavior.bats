@@ -5,7 +5,7 @@ load 'helpers/common.bash'
 setup() {
   dotfiles_clear_stub_path_conflicts
   REPO_ROOT="$(repo_root)"
-  TARGET_FILE="${REPO_ROOT}/run_once_after_prereqs.sh"
+  TARGET_FILE="${REPO_ROOT}/install/after_prereqs.sh"
 
   TEST_TMPDIR="$(mktemp -d)"
   BIN_DIR="${TEST_TMPDIR}/bin"

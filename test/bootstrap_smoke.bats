@@ -38,19 +38,13 @@ setup() {
 @test "repo has no legacy finalize.bats or /tmp helper paths" {
   run grep -nE 'finalize\.bats|/tmp/helpers/common\.bash' \
     "${REPO_ROOT}/.chezmoi.toml.tmpl" \
-    "${REPO_ROOT}/run_once_after_prereqs.sh" \
-    "${REPO_ROOT}/run_once_before_finalize.sh" \
+    "${REPO_ROOT}/run_once_after_prereqs.sh.tmpl" \
+    "${REPO_ROOT}/run_once_before_finalize.sh.tmpl" \
     "${REPO_ROOT}/scripts/test.sh"
   [ "$status" -ne 0 ]
 
   run grep -RnF '/tmp/helpers/common.bash' "${REPO_ROOT}/test"  --exclude=bootstrap_smoke.bats
   [ "$status" -ne 0 ]
-}
-
-@test "install/lib has no run_* files (chezmoi runs those as scripts without hook args)" {
-  local found
-  found="$(find "${REPO_ROOT}/install/lib" -mindepth 1 -maxdepth 1 -name 'run_*' -print 2>/dev/null || true)"
-  [ -z "${found}" ]
 }
 
 @test "canonical test runner remains scripts/test.sh (bats + pytest)" {

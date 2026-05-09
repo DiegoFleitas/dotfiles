@@ -57,7 +57,7 @@ setup() {
   run grep -F 'provisioned from the `Brewfile`' "${README}"
   [ "$status" -eq 0 ]
 
-  run grep -F '`Bun` is installed earlier in `run_once_after_prereqs.sh` using the official curl installer' "${README}"
+  run grep -F '`Bun` is installed earlier in `install/after_prereqs.sh` using the official curl installer' "${README}"
   [ "$status" -eq 0 ]
 }
 
@@ -69,7 +69,7 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
-@test "run_once_after_prereqs installs flyctl when DOTFILES_INSTALL_FLYCTL=1" {
+@test "install after_prereqs installs flyctl when DOTFILES_INSTALL_FLYCTL=1" {
   run grep -F 'DOTFILES_INSTALL_FLYCTL' "${AFTER_PREREQS}"
   [ "$status" -eq 0 ]
 
