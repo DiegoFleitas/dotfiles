@@ -92,7 +92,10 @@ setup() {
 @test "chezmoi template gates prompts on .chezmoi.interactive for Codespaces compatibility" {
   [ -f "${CHEZMOI_TMPL}" ]
 
-  run grep -F '{{ if .chezmoi.interactive }}' "${CHEZMOI_TMPL}"
+  run grep -F 'hasKey .chezmoi "interactive"' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '.chezmoi.interactive' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 
   run grep -F 'promptStringOnce . "git.name"' "${CHEZMOI_TMPL}"

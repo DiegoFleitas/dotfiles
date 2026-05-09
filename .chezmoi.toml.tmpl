@@ -16,7 +16,8 @@
 {{ $instOmzsh := true }}
 {{ $instFlyctl := false }}
 
-{{ if .chezmoi.interactive }}
+{{/* Non-interactive init (e.g. Codespaces dotfiles) may omit .chezmoi.interactive; access would error. */}}
+{{ if and (hasKey .chezmoi "interactive") .chezmoi.interactive }}
   {{ $gitName  = promptStringOnce . "git.name"  "Git user.name" }}
   {{ $gitEmail = promptStringOnce . "git.email" "Git user.email" }}
   {{ $instApt    = promptBoolOnce . "install.apt"     "Install apt build dependencies?" }}
