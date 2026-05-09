@@ -10,7 +10,7 @@ brew "gcc" # Recommended by Homebrew
 # brew "php" # use mise
 brew "composer"
 brew "awscli"
-# Python tooling (pyenv + version from versions.env installed via install/after_prereqs.sh)
+# Python: default install uses mise (dot_mise.toml); pyenv is optional (DOTFILES_INSTALL_PYENV=1).
 brew "ruff"   # lint + format (replaces flake8, isort, black)
 brew "uv"     # fast pip/venv (optional: uv venv, uv pip install)
 # brew "python3" # use mise

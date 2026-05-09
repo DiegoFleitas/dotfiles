@@ -126,6 +126,22 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "chezmoi template applies Codespaces minimal install overrides when CODESPACE_NAME set" {
+  [ -f "${CHEZMOI_TMPL}" ]
+
+  run grep -F 'DOTFILES_CODESPACES_PROFILE' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'codespaces_profile' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '{{   $instApt = false }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '{{   $instMise = false }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+}
+
 @test "dot_profile dot_zshrc and dot_bashrc wire bun PATH and BUN_INSTALL" {
   for f in "${DOT_PROFILE}" "${DOT_ZSHRC}" "${DOT_BASHRC}"; do
     [ -f "${f}" ]

@@ -82,3 +82,17 @@ setup() {
   run grep -F 'Skipping toolchain update (DOTFILES_INSTALL_MISE=0).' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
+
+@test "before_finalize skips brew nvm omz pyenv maintenance on Codespaces minimal profile" {
+  run grep -F '. "${SCRIPT_DIR}/codespaces.sh"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'Skipping Homebrew update (Codespaces minimal profile).' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'Skipping oh-my-zsh update (Codespaces minimal profile).' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'dotfiles_resolve_nvm_dir' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}

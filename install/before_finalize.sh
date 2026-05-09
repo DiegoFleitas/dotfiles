@@ -12,6 +12,8 @@ output_message() {
 SCRIPT_DIR="$(cd -- "${BASH_SOURCE[0]%/*}" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck disable=SC1091
+. "${SCRIPT_DIR}/codespaces.sh"
+# shellcheck disable=SC1091
 [ -f "${REPO_ROOT}/versions.env" ] && . "${REPO_ROOT}/versions.env"
 : "${NODE_VERSION:=24}"
 : "${PYTHON_VERSION:=3.12}"
@@ -57,10 +59,13 @@ fi
 output_message "Continuing setup process..."
 
 # Check if nvm is available before updating
-if [ "${DOTFILES_INSTALL_MISE:-1}" = "1" ]; then
-  if [ -f "$HOME/.nvm/nvm.sh" ]; then
+if dotfiles_skip_finalize_tooling_maintenance; then
+  output_message "Skipping nvm/Corepack update (Codespaces minimal profile)."
+elif [ "${DOTFILES_INSTALL_MISE:-1}" = "1" ]; then
+  _nvm_dir="$(dotfiles_resolve_nvm_dir)"
+  if [ -n "${_nvm_dir}" ]; then
     output_message "Loading and updating nvm..."
-    export NVM_DIR="$HOME/.nvm"
+    export NVM_DIR="${_nvm_dir}"
     # shellcheck disable=SC1091
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
     # shellcheck disable=SC1091
@@ -78,7 +83,9 @@ else
 fi
 
 # Check if brew is available before updating
-if [ "${DOTFILES_INSTALL_BREW:-1}" = "1" ]; then
+if dotfiles_skip_finalize_tooling_maintenance; then
+  output_message "Skipping Homebrew update (Codespaces minimal profile)."
+elif [ "${DOTFILES_INSTALL_BREW:-1}" = "1" ]; then
   if command -v brew &> /dev/null; then
     output_message "Updating Homebrew..."
     brew update
@@ -96,7 +103,9 @@ else
 fi
 
 # Update oh-my-zsh
-if [ "${DOTFILES_INSTALL_OHMYZSH:-1}" = "1" ]; then
+if dotfiles_skip_finalize_tooling_maintenance; then
+  output_message "Skipping oh-my-zsh update (Codespaces minimal profile)."
+elif [ "${DOTFILES_INSTALL_OHMYZSH:-1}" = "1" ]; then
   if [ -d "$HOME/.oh-my-zsh" ]; then
     output_message "Updating oh-my-zsh..."
     ZDOTDIR="${HOME}" ZSH_DISABLE_COMPFIX=true zsh -f -c '
@@ -112,7 +121,9 @@ else
 fi
 
 # Check if pyenv is available before updating
-if [ "${DOTFILES_INSTALL_MISE:-1}" = "1" ]; then
+if dotfiles_skip_finalize_tooling_maintenance; then
+  output_message "Skipping pyenv update (Codespaces minimal profile)."
+elif [ "${DOTFILES_INSTALL_MISE:-1}" = "1" ]; then
   if [ "${DOTFILES_INSTALL_BREW:-1}" = "1" ]; then
     if command -v pyenv &> /dev/null; then
       output_message "Updating pyenv and Python versions..."

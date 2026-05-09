@@ -658,6 +658,99 @@ def test_before_finalize_codespaces_skips_chsh(repo_root: Path, tmp_path: Path) 
     assert cp.returncode == 0
     assert "GitHub Codespaces detected. Skipping chsh" in (cp.stdout + cp.stderr)
     assert "chsh -s" not in Path(call_log).read_text()
+    assert "Skipping Homebrew update (Codespaces minimal profile)" in (cp.stdout + cp.stderr)
+    assert "Skipping nvm/Corepack update (Codespaces minimal profile)" in (cp.stdout + cp.stderr)
+    assert "brew update" not in Path(call_log).read_text()
+
+
+def test_before_finalize_codespaces_full_profile_runs_brew_update(
+    repo_root: Path, tmp_path: Path
+) -> None:
+    """DOTFILES_CODESPACES_PROFILE=full restores finalize maintenance on Codespaces."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    home = tmp_path / "home"
+    call_log = str(tmp_path / "calls.log")
+    Path(call_log).write_text("", encoding="utf-8")
+
+    (home / ".nvm" / "versions" / "node").mkdir(parents=True)
+    nvm_sh = home / ".nvm" / "nvm.sh"
+    nvm_sh.write_text(
+        textwrap.dedent(
+            f"""\
+            nvm() {{
+              echo "nvm $*" >>"{call_log}"
+              return 0
+            }}
+            """
+        ),
+        encoding="utf-8",
+    )
+    (home / ".oh-my-zsh").mkdir(parents=True)
+    (home / ".oh-my-zsh" / "oh-my-zsh.sh").write_text("omz() { return 0; }\n", encoding="utf-8")
+
+    write_stub(
+        bin_dir,
+        "dirname",
+        """\
+        #!/bin/bash
+        path="${1:-}"
+        path="${path%/}"
+        if [[ "${path}" != *"/"* ]]; then echo "."; else echo "${path%/*}"; fi
+        """,
+    )
+    write_stub(
+        bin_dir,
+        "zsh",
+        f"""\
+        #!/bin/bash
+        if [[ "${{1:-}}" == "-f" ]] && [[ "${{2:-}}" == "-c" ]]; then
+          export ZSH="$HOME/.oh-my-zsh"
+          [ -f "$ZSH/oh-my-zsh.sh" ] && . "$ZSH/oh-my-zsh.sh"
+          command -v omz >/dev/null 2>&1 && omz update
+        fi
+        exit 0
+        """,
+    )
+    write_stub(
+        bin_dir,
+        "grep",
+        f"""\
+        #!/bin/bash
+        if [[ "$*" == *microsoft* ]] && [[ "$*" == *proc/version* ]]; then exit 1; fi
+        if [[ "$*" == */etc/shells ]]; then exit 1; fi
+        if [[ "${{1:-}}" == "-Eq" ]]; then exit 0; fi
+        exit 0
+        """,
+    )
+    write_stub(bin_dir, "sudo", "#!/bin/bash\nexit 0\n")
+    write_stub(bin_dir, "chsh", "#!/bin/bash\nexit 0\n")
+    write_stub(
+        bin_dir,
+        "brew",
+        f"""\
+        #!/bin/bash
+        echo "brew $*" >>"{call_log}"
+        exit 0
+        """,
+    )
+    write_mise_stubs(bin_dir, call_log, with_corepack=True)
+
+    path = f"{bin_dir}:/bin:/usr/bin"
+    cp = run_script_clean(
+        repo_root / "install" / "before_finalize.sh",
+        home=str(home),
+        path=path,
+        call_log=call_log,
+        extra_env={
+            "SHELL": "/bin/bash",
+            "CODESPACE_NAME": "unit-test-codespace",
+            "DOTFILES_CODESPACES_PROFILE": "full",
+        },
+    )
+    assert cp.returncode == 0
+    assert "Updating Homebrew..." in (cp.stdout + cp.stderr)
+    assert "brew update" in Path(call_log).read_text()
 
 
 def test_before_finalize_skips_brew_upgrade_by_default(repo_root: Path, tmp_path: Path) -> None:

@@ -43,6 +43,14 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "after_prereqs skips pyenv when mise is on unless DOTFILES_INSTALL_PYENV=1" {
+  run grep -F 'DOTFILES_INSTALL_PYENV' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'Skipping pyenv (Python is managed by mise' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
 @test "after_prereqs installs bun via official curl installer when missing" {
   run grep -F 'curl -fsSL https://bun.com/install | bash' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
@@ -82,6 +90,17 @@ setup() {
   [ "$status" -eq 0 ]
 
   run grep -F -- '--force-confold' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
+
+@test "after_prereqs sources codespaces helpers for profile detection" {
+  run grep -F '. "${SCRIPT_DIR}/codespaces.sh"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F ': "${DOTFILES_INSTALL_APT:=0}"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'Skipping nvm bootstrap (Codespaces minimal profile).' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
 

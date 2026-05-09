@@ -9,6 +9,9 @@ setup() {
 }
 
 @test "run_once_after_010_prereqs template exports install flags and delegates to install/after_prereqs.sh" {
+  run grep -F 'export DOTFILES_CODESPACES_PROFILE="{{ .codespaces_profile }}"' "${AFTER_TMPL}"
+  [ "$status" -eq 0 ]
+
   run grep -F 'export DOTFILES_INSTALL_APT="{{ .install.apt | ternary "1" "0" }}"' "${AFTER_TMPL}"
   [ "$status" -eq 0 ]
 
@@ -20,6 +23,9 @@ setup() {
 }
 
 @test "run_once_after_090_finalize template exports install flags and delegates to install/before_finalize.sh" {
+  run grep -F 'export DOTFILES_CODESPACES_PROFILE="{{ .codespaces_profile }}"' "${BEFORE_TMPL}"
+  [ "$status" -eq 0 ]
+
   run grep -F 'export DOTFILES_INSTALL_BREW="{{ .install.brew | ternary "1" "0" }}"' "${BEFORE_TMPL}"
   [ "$status" -eq 0 ]
 

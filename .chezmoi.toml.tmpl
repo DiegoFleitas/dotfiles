@@ -17,6 +17,23 @@
 {{ $instOmzsh := true }}
 {{ $instFlyctl := false }}
 
+{{/* Codespaces: default DOTFILES_CODESPACES_PROFILE=minimal skips heavy apt/brew/mise/omz (universal image already includes toolchains). Set DOTFILES_CODESPACES_PROFILE=full to keep local-like installs. */}}
+{{ $csp := env "DOTFILES_CODESPACES_PROFILE" }}
+{{ if eq $csp "" }}
+{{- if ne (env "CODESPACE_NAME") "" -}}
+{{- $csp = "minimal" -}}
+{{- else -}}
+{{- $csp = "full" -}}
+{{- end -}}
+{{ end }}
+{{ if and (eq $csp "minimal") (ne (env "CODESPACE_NAME") "") }}
+{{   $instApt = false }}
+{{   $instBrew = false }}
+{{   $instBun = false }}
+{{   $instMise = false }}
+{{   $instOmzsh = false }}
+{{ end }}
+
 {{/* Non-interactive init (e.g. Codespaces dotfiles) may omit .chezmoi.interactive; access would error. */}}
 {{ if and (hasKey .chezmoi "interactive") .chezmoi.interactive }}
   {{ $gitName  = promptStringOnce . "git.name"  "Git user.name" }}
@@ -32,3 +49,4 @@
 [data]
 git = { name = {{ $gitName | quote }}, email = {{ $gitEmail | quote }} }
 install = { apt = {{ $instApt }}, brew = {{ $instBrew }}, bun = {{ $instBun }}, mise = {{ $instMise }}, ohmyzsh = {{ $instOmzsh }}, flyctl = {{ $instFlyctl }} }
+codespaces_profile = {{ $csp | quote }}

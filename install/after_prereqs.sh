@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# System deps, brew bundle, nvm, bun, oh-my-zsh, pyenv (invoked by chezmoi run_once_after_010_prereqs or directly).
+# System deps, brew bundle, nvm, bun, oh-my-zsh, mise, optional pyenv (chezmoi run_once_after_010_prereqs or direct).
 
 # Function to display messages with separators
 output_message() {
@@ -11,11 +11,23 @@ output_message() {
 SCRIPT_DIR="$(cd -- "${BASH_SOURCE[0]%/*}" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck disable=SC1091
+. "${SCRIPT_DIR}/codespaces.sh"
+# shellcheck disable=SC1091
 [ -f "${REPO_ROOT}/versions.env" ] && . "${REPO_ROOT}/versions.env"
 : "${NODE_VERSION:=24}"
 : "${PYTHON_VERSION:=3.12}"
 : "${PHP_VERSION:=8.5}"
 : "${NVM_INSTALL_VERSION:=v0.40.3}"
+
+if dotfiles_is_minimal_codespace; then
+    output_message "Codespaces profile: $(dotfiles_codespace_profile) (set DOTFILES_CODESPACES_PROFILE=full for local-like installs)."
+    # Defaults only when unset so DOTFILES_CODESPACES_PROFILE=full or explicit exports still win.
+    : "${DOTFILES_INSTALL_APT:=0}"
+    : "${DOTFILES_INSTALL_BREW:=0}"
+    : "${DOTFILES_INSTALL_BUN:=0}"
+    : "${DOTFILES_INSTALL_MISE:=0}"
+    : "${DOTFILES_INSTALL_OHMYZSH:=0}"
+fi
 
 if [ "${DOTFILES_DISABLE_APT:-0}" = "1" ]; then
     HAS_APT=0
@@ -113,7 +125,9 @@ fi
 # scripts (e.g. chezmoi) the usual executable lookup does not see it, so we test nvm.sh on disk.
 NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 export NVM_DIR
-if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+if dotfiles_is_minimal_codespace; then
+    output_message "Skipping nvm bootstrap (Codespaces minimal profile)."
+elif [ ! -s "$NVM_DIR/nvm.sh" ] && ! dotfiles_nvm_sh_usable; then
     output_message "Installing nvm..."
     sh -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_INSTALL_VERSION}/install.sh | bash"
 fi
@@ -201,26 +215,39 @@ if [ "${DOTFILES_INSTALL_OHMYZSH:-1}" = "1" ]; then
 fi
 
 if [ "${DOTFILES_INSTALL_BREW:-1}" = "1" ]; then
-    # Install pyenv if not already installed
-    if ! command -v pyenv &> /dev/null; then
-        output_message "Installing pyenv..."
-        brew install pyenv
+    # Python: dot_mise.toml + mise activate own the default toolchain; pyenv would duplicate
+    # work (slow source compile on Linux). Opt back in with DOTFILES_INSTALL_PYENV=1.
+    _install_pyenv=0
+    if [ "${DOTFILES_INSTALL_PYENV:-}" = "1" ]; then
+        _install_pyenv=1
+    elif [ "${DOTFILES_INSTALL_PYENV:-}" = "0" ]; then
+        _install_pyenv=0
+    elif [ "${DOTFILES_INSTALL_MISE:-1}" != "1" ]; then
+        _install_pyenv=1
     fi
 
-    # Setup python environment
-    if command -v pyenv &> /dev/null; then
-        if ! pyenv versions | grep -q "${PYTHON_VERSION}"; then
-            output_message "Installing Python ${PYTHON_VERSION}..."
-            pyenv install "${PYTHON_VERSION}"
-            output_message "Setting global Python version to ${PYTHON_VERSION}..."
-            pyenv global "${PYTHON_VERSION}"
+    if [ "${_install_pyenv}" -eq 1 ]; then
+        if ! command -v pyenv &> /dev/null; then
+            output_message "Installing pyenv..."
+            brew install pyenv
+        fi
+
+        if command -v pyenv &> /dev/null; then
+            if ! pyenv versions | grep -q "${PYTHON_VERSION}"; then
+                output_message "Installing Python ${PYTHON_VERSION}..."
+                pyenv install "${PYTHON_VERSION}"
+                output_message "Setting global Python version to ${PYTHON_VERSION}..."
+                pyenv global "${PYTHON_VERSION}"
+            fi
+        else
+            output_message "pyenv not found after install attempt. Skipping Python setup."
         fi
     else
-        output_message "pyenv not found after install attempt. Skipping Python setup."
+        output_message "Skipping pyenv (Python is managed by mise; set DOTFILES_INSTALL_PYENV=1 to use pyenv)."
     fi
 
     if command -v python3 &> /dev/null; then
-        output_message "Python ${PYTHON_VERSION} installed successfully."
+        output_message "Python ${PYTHON_VERSION} is available on PATH."
     fi
 fi
 
