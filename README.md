@@ -44,15 +44,33 @@ After install, run `source ~/.profile` (or open a new shell).
 
 ## What happens during install
 
-`chezmoi init --apply` clones this repo and runs:
+Chezmoi applies this repo in a fixed order. **`run_once_before_*`** scripts run *before* any files are written; **`run_once_after_*`** scripts run *after* all managed files are on disk. This repo uses only **`after_`** hooks, with numeric prefixes so **prereqs always runs before finalize** (both need Homebrew and other tools installed in the first step).
 
-1. **Dotfiles apply** — symlinks/copies for config files (and any `run_once_before_*` scripts, if present)
-2. `run_once_after_010_prereqs.sh` (from `run_once_after_010_prereqs.sh.tmpl`; runs `install/after_prereqs.sh`)
-   — optional steps via one-time chezmoi prompts; then apt, Homebrew, nvm, Bun, oh-my-zsh, pyenv, Brewfile, etc. as enabled
-3. `run_once_after_090_finalize.sh` (from `run_once_after_090_finalize.sh.tmpl`; runs `install/before_finalize.sh`)
-   — default shell (`zsh`) where possible, plus brew/nvm/omz/pyenv updates as enabled
+### Apply flow
 
-Scripts use the `run_once_after_*` prefix so they run **after** managed files are written; numeric prefixes enforce **prereqs → finalize**. (Older `run_once_before_finalize` ran in the wrong phase and saw no Homebrew yet.)
+```mermaid
+flowchart TD
+  A["chezmoi init --apply DiegoFleitas"] --> B["Dotfiles source in ~/.local/share/chezmoi"]
+  B --> C["run_once_before_* — before any files change\n(this repo: none)"]
+  C --> D["Apply managed files into ~\n.bashrc, .zshrc, .gitconfig, …"]
+  D --> E["run_once_after_010_prereqs → install/after_prereqs.sh\napt, Homebrew, nvm, Bun, omz, pyenv, Brewfile, …"]
+  E --> F["run_once_after_090_finalize → install/before_finalize.sh\nshell default, brew update, nvm/Corepack, omz, pyenv, …"]
+  F --> G["New shell or: source ~/.profile"]
+```
+
+Chezmoi only runs **`run_once_*`** scripts when the script is new or its **rendered content** changed (see [use scripts](https://www.chezmoi.io/user-guide/use-scripts-to-perform-actions/)). To re-run everything from scratch you can clear script state: `chezmoi state delete-bucket --bucket=scriptState` (then `chezmoi apply`).
+
+### GitHub Codespaces path
+
+Account **Dotfiles** clones this repo under **`/workspaces/.codespaces/.persistedshare/dotfiles`**. **`install.sh`** runs first (so Codespaces does not treat the **`install/`** directory as the `install` hook). It calls **`bootstrap.sh`**, which runs the same **`chezmoi init --apply`** as local setup.
+
+```mermaid
+flowchart LR
+  A["Codespaces: dotfiles repo clone"] --> B["install.sh"]
+  B --> C["bootstrap.sh"]
+  C --> D["chezmoi init --apply DiegoFleitas"]
+  D --> E["Apply flow diagram above"]
+```
 
 ## Try it in Codespaces
 
