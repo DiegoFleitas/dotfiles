@@ -7,15 +7,25 @@
 # Test execution is manual via ./scripts/test.sh (no automatic test hook configured here).
 # If this template changes, regenerate config with `chezmoi init DiegoFleitas`.
 
-{{ $gitName := promptStringOnce . "git.name" "Git user.name" }}
-{{ $gitEmail := promptStringOnce . "git.email" "Git user.email" }}
+{{ $gitName := "" }}
+{{ $gitEmail := "" }}
+{{ $instApt := true }}
+{{ $instBrew := true }}
+{{ $instBun := true }}
+{{ $instMise := true }}
+{{ $instOmzsh := true }}
+{{ $instFlyctl := false }}
 
-{{ $instApt := promptBoolOnce . "install.apt" "Install apt build dependencies?" }}
-{{ $instBrew := promptBoolOnce . "install.brew" "Install Homebrew + Brewfile?" }}
-{{ $instBun := promptBoolOnce . "install.bun" "Install Bun?" }}
-{{ $instMise := promptBoolOnce . "install.mise" "Install mise toolchains?" }}
-{{ $instOmzsh := promptBoolOnce . "install.ohmyzsh" "Install oh-my-zsh?" }}
-{{ $instFlyctl := promptBoolOnce . "install.flyctl" "Install Fly.io CLI?" }}
+{{ if .chezmoi.interactive }}
+  {{ $gitName  = promptStringOnce . "git.name"  "Git user.name" }}
+  {{ $gitEmail = promptStringOnce . "git.email" "Git user.email" }}
+  {{ $instApt    = promptBoolOnce . "install.apt"     "Install apt build dependencies?" }}
+  {{ $instBrew   = promptBoolOnce . "install.brew"    "Install Homebrew + Brewfile?" }}
+  {{ $instBun    = promptBoolOnce . "install.bun"     "Install Bun?" }}
+  {{ $instMise   = promptBoolOnce . "install.mise"    "Install mise toolchains?" }}
+  {{ $instOmzsh  = promptBoolOnce . "install.ohmyzsh" "Install oh-my-zsh?" }}
+  {{ $instFlyctl = promptBoolOnce . "install.flyctl"  "Install Fly.io CLI?" }}
+{{ end }}
 
 [data]
 git = { name = {{ $gitName | quote }}, email = {{ $gitEmail | quote }} }

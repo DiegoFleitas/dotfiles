@@ -77,6 +77,40 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "chezmoi template gates prompts on .chezmoi.interactive for Codespaces compatibility" {
+  [ -f "${CHEZMOI_TMPL}" ]
+
+  run grep -F '{{ if .chezmoi.interactive }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'promptStringOnce . "git.name"' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'promptStringOnce . "git.email"' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'promptBoolOnce . "install.flyctl"' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+}
+
+@test "chezmoi template seeds non-interactive defaults matching install/* gates" {
+  [ -f "${CHEZMOI_TMPL}" ]
+
+  run grep -F '{{ $gitName := "" }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '{{ $gitEmail := "" }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+
+  for var in instApt instBrew instBun instMise instOmzsh; do
+    run grep -F "{{ \$${var} := true }}" "${CHEZMOI_TMPL}"
+    [ "$status" -eq 0 ]
+  done
+
+  run grep -F '{{ $instFlyctl := false }}' "${CHEZMOI_TMPL}"
+  [ "$status" -eq 0 ]
+}
+
 @test "dot_profile dot_zshrc and dot_bashrc wire bun PATH and BUN_INSTALL" {
   for f in "${DOT_PROFILE}" "${DOT_ZSHRC}" "${DOT_BASHRC}"; do
     [ -f "${f}" ]

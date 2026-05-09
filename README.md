@@ -84,7 +84,9 @@ WSL behavior notes:
 ## Git identity prompt
 
 > [!IMPORTANT]
-> On first `chezmoi apply`, you will be prompted for git `user.name` and `user.email`, plus optional install steps (apt, Homebrew, Bun, mise, oh-my-zsh, Fly.io CLI). Those values are cached in `~/.config/chezmoi/chezmoi.toml` and are not re-prompted on later applies. To change them later, edit that file or re-run `chezmoi init` as needed.
+> On first `chezmoi apply` in an interactive shell, you will be prompted for git `user.name` and `user.email`, plus optional install steps (apt, Homebrew, Bun, mise, oh-my-zsh, Fly.io CLI). Those values are cached in `~/.config/chezmoi/chezmoi.toml` and are not re-prompted on later applies. To change them later, edit that file or re-run `chezmoi init` as needed.
+>
+> In non-interactive environments (GitHub Codespaces dotfiles bootstrap, CI), all prompts are skipped and chezmoi uses safe defaults: `apt`, `brew`, `bun`, `mise`, and `ohmyzsh` are enabled; `flyctl` is disabled; and git `user.name`/`user.email` are left empty so chezmoi will not write a `[user]` block to `~/.gitconfig` — Codespaces' own auto-configured git identity is preserved. To opt into different values later, re-run `chezmoi init DiegoFleitas` interactively or edit `~/.config/chezmoi/chezmoi.toml`.
 
 ## Optional apps install
 

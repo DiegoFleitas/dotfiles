@@ -43,3 +43,8 @@ setup() {
   run grep -F 'gpgsign = true' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
+
+@test "dot_gitconfig user block is gated on non-empty name or email" {
+  run grep -F '{{- if or $name $email }}' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+}
