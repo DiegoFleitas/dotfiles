@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Shared helpers for GitHub Codespaces profiles (sourced by install/*.sh).
-# Universal image layout: https://github.com/devcontainers/images (setup-user links
-# Node tooling under /home/codespace; nvm script often at /usr/local/share/nvm/nvm.sh).
+# Universal image layout: https://github.com/devcontainers/images
 
 dotfiles_is_codespace() {
   [ -n "${CODESPACE_NAME:-}" ]
@@ -35,7 +34,7 @@ dotfiles_resolve_nvm_dir() {
   fi
 }
 
-# Skip brew/nvm/omz/pyenv maintenance in before_finalize for minimal profile.
+# Skip brew/nvm/Corepack/omz maintenance in before_finalize for minimal profile.
 dotfiles_skip_finalize_tooling_maintenance() {
   dotfiles_is_minimal_codespace
 }
