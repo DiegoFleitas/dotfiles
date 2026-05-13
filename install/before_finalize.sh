@@ -45,8 +45,12 @@ if [ "${SHELL:-}" != "${ZSH_BIN}" ]; then
   elif [ -n "${CODESPACE_NAME:-}" ]; then
     output_message "GitHub Codespaces detected. Skipping chsh (requires password in this environment)."
   else
-    chsh -s "${ZSH_BIN}"
-    output_message "Default shell changed to Zsh. Please log out and log back in for changes to take effect."
+    if command -v chsh >/dev/null 2>&1; then
+      chsh -s "${ZSH_BIN}"
+      output_message "Default shell changed to Zsh. Please log out and log back in for changes to take effect."
+    else
+      output_message "chsh not found. Skipping default shell change."
+    fi
   fi
 fi
 

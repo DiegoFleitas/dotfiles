@@ -38,6 +38,12 @@ setup() {
 
   run grep -F 'GitHub Codespaces detected. Skipping chsh' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
+
+  run grep -F 'command -v chsh >/dev/null 2>&1' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'chsh not found. Skipping default shell change.' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
 }
 
 @test "before_finalize avoids implicit brew upgrades unless explicitly enabled" {
