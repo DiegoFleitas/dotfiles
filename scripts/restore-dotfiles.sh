@@ -31,7 +31,7 @@ fi
 
 echo "Restoring from $BACKUP_DIR"
 
-for f in .bashrc .zshrc .profile .gitconfig .nvmrc .mise.toml; do
+for f in .bashrc .zshrc .profile .gitconfig .nvmrc; do
   if [[ -f "$BACKUP_DIR/$f" ]]; then
     cp "$BACKUP_DIR/$f" "$HOME/$f"
     echo "  $f"

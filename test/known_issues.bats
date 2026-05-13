@@ -21,23 +21,8 @@ load 'helpers/common.bash'
 
 setup() {
   REPO_ROOT="$(repo_root)"
-  AFTER_FILE="${REPO_ROOT}/install/after_prereqs.sh"
   BEFORE_FILE="${REPO_ROOT}/install/before_finalize.sh"
-  MISE_TOML="${REPO_ROOT}/dot_mise.toml"
   GITCONFIG_TMPL="${REPO_ROOT}/dot_gitconfig.tmpl"
-}
-
-@test "after_prereqs installs PHP source-build deps when dot_mise.toml uses asdf-php" {
-  skip "Verified 2026-05-09: not a bug. dot_mise.toml uses prebuilt 'ubi:adwinying/php' (commit fa4fe8a), so libxml2-dev / libgd-dev are intentionally not installed. The dot_mise.toml comment documents the asdf-php alternative ('keep after_prereqs apt PHP deps')."
-
-  run grep -F 'libxml2-dev' "${AFTER_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'libgd-dev' "${AFTER_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'php = "' "${MISE_TOML}"
-  [ "$status" -eq 0 ]
 }
 
 @test "is_wsl explicitly guards on grep availability and /proc/version readability" {
@@ -54,20 +39,6 @@ setup() {
   skip "TODO (pre-existing, not introduced by Codespaces fix): chsh is unconditionally invoked on the non-WSL branch (install/before_finalize.sh:49). chsh is universal on Debian/Ubuntu via the passwd package, but a 'command -v chsh' guard would be safer for minimal/Alpine/container images. Compare with after_prereqs.sh:182 which already uses 'command -v chsh >/dev/null 2>&1'."
 
   run grep -F 'command -v chsh >/dev/null 2>&1' "${BEFORE_FILE}"
-  [ "$status" -eq 0 ]
-}
-
-@test "before_finalize gates nvm/Corepack on a Node-specific flag rather than DOTFILES_INSTALL_MISE" {
-  skip "TODO (pre-existing, not introduced by Codespaces fix): the nvm + Corepack block at install/before_finalize.sh:58-76 is gated on DOTFILES_INSTALL_MISE. nvm and mise are independent tool managers; setting DOTFILES_INSTALL_MISE=0 should not skip nvm-managed Node updates. Suggested fix: introduce DOTFILES_INSTALL_NVM (default 1), wire it through .chezmoi.toml.tmpl + run_once_*.sh.tmpl, and gate this block on it. Pair with the next test."
-
-  run grep -F 'DOTFILES_INSTALL_NVM' "${BEFORE_FILE}"
-  [ "$status" -eq 0 ]
-}
-
-@test "after_prereqs nvm install shares its gate with before_finalize nvm setup" {
-  skip "TODO (pre-existing, not introduced by Codespaces fix): install/after_prereqs.sh:107-110 installs nvm unconditionally, but install/before_finalize.sh:58-76 gates the nvm setup on DOTFILES_INSTALL_MISE. This leaves nvm installed-but-unconfigured when DOTFILES_INSTALL_MISE=0. Both blocks should share the same flag (paired with the previous test, ideally DOTFILES_INSTALL_NVM)."
-
-  run grep -F 'DOTFILES_INSTALL_NVM' "${AFTER_FILE}"
   [ "$status" -eq 0 ]
 }
 

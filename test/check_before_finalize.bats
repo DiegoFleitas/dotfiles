@@ -7,28 +7,19 @@ setup() {
   TARGET_FILE="${REPO_ROOT}/install/before_finalize.sh"
 }
 
-@test "before_finalize sources versions.env and defaults version variables" {
-  run grep -F '[ -f "${REPO_ROOT}/versions.env" ] && . "${REPO_ROOT}/versions.env"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
+@test "before_finalize defaults NODE_VERSION when not set" {
   run grep -F ': "${NODE_VERSION:=24}"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F ': "${PYTHON_VERSION:=3.12}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
 
-@test "before_finalize uses centralized Node and Python values" {
+@test "before_finalize uses nvm plus Corepack when nvm is enabled" {
   run grep -F 'nvm install "${NODE_VERSION}" && nvm alias default "${NODE_VERSION}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
-  run grep -F 'pyenv versions --bare | grep -Eq "^${PYTHON_VERSION}(\\.|$)"' "${TARGET_FILE}"
+  run grep -F 'corepack enable' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
-  run grep -F 'pyenv install "${PYTHON_VERSION}"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'DOTFILES_PYTHON_REFRESH' "${TARGET_FILE}"
+  run grep -F 'dotfiles_resolve_nvm_dir' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
 
@@ -75,15 +66,15 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
-@test "before_finalize gates toolchain blocks on DOTFILES_INSTALL_MISE with default 1" {
-  run grep -F '[ "${DOTFILES_INSTALL_MISE:-1}" = "1" ]' "${TARGET_FILE}"
+@test "before_finalize gates toolchain blocks on DOTFILES_INSTALL_NVM with default 1" {
+  run grep -F '[ "${DOTFILES_INSTALL_NVM:-1}" = "1" ]' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
-  run grep -F 'Skipping toolchain update (DOTFILES_INSTALL_MISE=0).' "${TARGET_FILE}"
+  run grep -F 'Skipping toolchain update (DOTFILES_INSTALL_NVM=0).' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
 
-@test "before_finalize skips brew nvm omz pyenv maintenance on Codespaces minimal profile" {
+@test "before_finalize skips brew nvm Corepack omz maintenance on Codespaces minimal profile" {
   run grep -F '. "${SCRIPT_DIR}/codespaces.sh"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
@@ -93,6 +84,6 @@ setup() {
   run grep -F 'Skipping oh-my-zsh update (Codespaces minimal profile).' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
-  run grep -F 'dotfiles_resolve_nvm_dir' "${TARGET_FILE}"
+  run grep -F 'Skipping nvm/Corepack update (Codespaces minimal profile).' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }

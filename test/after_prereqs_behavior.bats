@@ -25,7 +25,8 @@ setup() {
   export HOME="${TEST_TMPDIR}/home"
   mkdir -p "${HOME}"
 
-  # mise installs toolchains from dot_mise.toml (SCRIPT_DIR); no HOME stubs needed.
+  mkdir -p "${HOME}/.nvm"
+  printf '#\n' > "${HOME}/.nvm/nvm.sh"
 
   # Provide a bashrc file in case the script tries to read/append.
   : > "${HOME}/.bashrc"
@@ -147,19 +148,6 @@ case "${1:-}" in
 esac
 exit 0
 '
-  write_stub "mise" "#!/bin/bash
-echo \"mise \$*\" >>\"\$CALL_LOG\"
-if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
-  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
-fi
-exit 0
-"
-  write_stub "node" '#!/bin/bash
-exit 0
-'
-  write_stub "php" '#!/bin/bash
-exit 0
-'
   write_stub "grep" '#!/bin/bash
 echo "grep $*" >>"$CALL_LOG"
 if [ "${1:-}" = "-q" ]; then
@@ -171,10 +159,6 @@ if [ "${1:-}" = "-q" ]; then
   esac
 fi
 exit 2
-'
-  write_stub "python3" '#!/bin/bash
-echo "python3 $*" >>"$CALL_LOG"
-exit 0
 '
   write_stub "chsh" '#!/bin/bash
 echo "chsh $*" >>"$CALL_LOG"
@@ -271,22 +255,6 @@ exit 0
 
   write_stub "brew" '#!/bin/bash
 echo "brew $*" >>"$CALL_LOG"
-exit 0
-'
-  write_stub "mise" "#!/bin/bash
-echo \"mise \$*\" >>\"\$CALL_LOG\"
-if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
-  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
-fi
-exit 0
-"
-  write_stub "node" '#!/bin/bash
-exit 0
-'
-  write_stub "php" '#!/bin/bash
-exit 0
-'
-  write_stub "python3" '#!/bin/bash
 exit 0
 '
   write_stub "zsh" '#!/bin/bash
@@ -405,22 +373,6 @@ exit 0
   write_stub "brew" '#!/bin/bash
 exit 0
 '
-  write_stub "mise" "#!/bin/bash
-echo \"mise \$*\" >>\"\$CALL_LOG\"
-if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
-  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
-fi
-exit 0
-"
-  write_stub "node" '#!/bin/bash
-exit 0
-'
-  write_stub "php" '#!/bin/bash
-exit 0
-'
-  write_stub "python3" '#!/bin/bash
-exit 0
-'
   write_stub "wget" '#!/bin/bash
 exit 0
 '
@@ -522,22 +474,6 @@ exit 0
   write_stub "brew" '#!/bin/bash
 exit 0
 '
-  write_stub "mise" "#!/bin/bash
-echo \"mise \$*\" >>\"\$CALL_LOG\"
-if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
-  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
-fi
-exit 0
-"
-  write_stub "node" '#!/bin/bash
-exit 0
-'
-  write_stub "php" '#!/bin/bash
-exit 0
-'
-  write_stub "python3" '#!/bin/bash
-exit 0
-'
   write_stub "wget" '#!/bin/bash
 exit 0
 '
@@ -599,22 +535,6 @@ case "${1:-}" in
 esac
 exit 0
 '
-  write_stub "mise" "#!/bin/bash
-echo \"mise \$*\" >>\"\$CALL_LOG\"
-if [ \"\${1:-}\" = \"env\" ] && [ \"\${2:-}\" = \"-s\" ]; then
-  echo \"export PATH=\\\"${BIN_DIR}:\\\$PATH\\\"\"
-fi
-exit 0
-"
-  write_stub "node" '#!/bin/bash
-exit 0
-'
-  write_stub "php" '#!/bin/bash
-exit 0
-'
-  write_stub "python3" '#!/bin/bash
-exit 0
-'
   write_stub "grep" '#!/bin/bash
 exit 1
 '
@@ -639,7 +559,7 @@ exit 98
   [ "$status" -eq 0 ]
 }
 
-@test "after_prereqs Codespaces minimal skips brew mise bun omz and nvm bootstrap" {
+@test "after_prereqs Codespaces minimal skips brew bun omz nvm install" {
   export CODESPACE_NAME="test-cs-minimal"
 
   write_stub "uname" '#!/bin/bash
@@ -677,19 +597,6 @@ echo "brew $*" >>"$CALL_LOG"
 exit 99
 '
 
-  write_stub "mise" '#!/bin/bash
-exit 99
-'
-
-  write_stub "node" '#!/bin/bash
-exit 0
-'
-  write_stub "php" '#!/bin/bash
-exit 0
-'
-  write_stub "python3" '#!/bin/bash
-exit 0
-'
   write_stub "grep" '#!/bin/bash
 exit 1
 '
@@ -709,6 +616,7 @@ exit 98
   dotfiles_run_script_clean "${TARGET_FILE}"
   unset CODESPACE_NAME
   [ "$status" -eq 0 ]
+  [[ "$output" == *"Codespaces profile:"* ]]
   [[ "$output" == *"Skipping nvm bootstrap (Codespaces minimal profile)."* ]]
 
   run /usr/bin/grep -F "brew " "${CALL_LOG}"

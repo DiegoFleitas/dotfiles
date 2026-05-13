@@ -7,14 +7,8 @@ setup() {
   TARGET_FILE="${REPO_ROOT}/install/after_prereqs.sh"
 }
 
-@test "after_prereqs sources versions.env and defaults version variables" {
-  run grep -F '[ -f "${REPO_ROOT}/versions.env" ] && . "${REPO_ROOT}/versions.env"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F ': "${PYTHON_VERSION:=3.12}"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F ': "${PHP_VERSION:=8.5}"' "${TARGET_FILE}"
+@test "after_prereqs defaults NODE_VERSION and NVM_INSTALL_VERSION when not set" {
+  run grep -F ': "${NODE_VERSION:=24}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
   run grep -F ': "${NVM_INSTALL_VERSION:=v0.40.3}"' "${TARGET_FILE}"
@@ -28,26 +22,12 @@ setup() {
   run grep -F '[ ! -s "$NVM_DIR/nvm.sh" ]' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
-  run grep -F 'command -v nvm' "${TARGET_FILE}"
-  [ "$status" -ne 0 ]
-}
-
-@test "after_prereqs uses centralized installer and python values" {
   run grep -F 'nvm-sh/nvm/${NVM_INSTALL_VERSION}/install.sh' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
-
-  run grep -F 'pyenv install "${PYTHON_VERSION}"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'pyenv global "${PYTHON_VERSION}"' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
 }
 
-@test "after_prereqs skips pyenv when mise is on unless DOTFILES_INSTALL_PYENV=1" {
-  run grep -F 'DOTFILES_INSTALL_PYENV' "${TARGET_FILE}"
-  [ "$status" -eq 0 ]
-
-  run grep -F 'Skipping pyenv (Python is managed by mise' "${TARGET_FILE}"
+@test "after_prereqs skips nvm bootstrap when DOTFILES_INSTALL_NVM=0" {
+  run grep -F 'Skipping nvm bootstrap (DOTFILES_INSTALL_NVM=0).' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
 
@@ -61,7 +41,7 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
-@test "after_prereqs runs brew bundle (installs Brewfile packages e.g. php, composer)" {
+@test "after_prereqs runs brew bundle (installs Brewfile packages e.g. yarn, jq)" {
   run grep -F 'brew bundle --file="${HOME}/.local/share/chezmoi/Brewfile"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
@@ -100,11 +80,14 @@ setup() {
   run grep -F ': "${DOTFILES_INSTALL_APT:=0}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
+  run grep -F 'Codespaces profile:' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
   run grep -F 'Skipping nvm bootstrap (Codespaces minimal profile).' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
 
-@test "after_prereqs gates apt brew bun and oh-my-zsh on DOTFILES_INSTALL_* with default 1" {
+@test "after_prereqs gates apt brew bun nvm and oh-my-zsh on DOTFILES_INSTALL_* with default 1" {
   run grep -F '[ "${DOTFILES_INSTALL_APT:-1}" = "1" ] && [ "${HAS_APT}" -eq 1 ]' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
@@ -112,6 +95,9 @@ setup() {
   [ "$status" -eq 0 ]
 
   run grep -F '[ "${DOTFILES_INSTALL_BUN:-1}" = "1" ]' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F '[ "${DOTFILES_INSTALL_NVM:-1}" = "1" ]' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
   run grep -F '[ "${DOTFILES_INSTALL_OHMYZSH:-1}" = "1" ]' "${TARGET_FILE}"

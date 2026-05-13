@@ -17,7 +17,7 @@ repo_root() {
 # Bash prefers shell functions over PATH for `command -v`. Dev shells often wrap
 # brew/curl; unset those so stub binaries in BIN_DIR are the ones run.
 dotfiles_clear_stub_path_conflicts() {
-  unset -f brew bundle curl git pyenv mise grep bash 2>/dev/null || true
+  unset -f brew bundle curl git pyenv grep bash 2>/dev/null || true
 }
 
 # Run a script under test with a clean environment (no BASH_ENV, no inherited

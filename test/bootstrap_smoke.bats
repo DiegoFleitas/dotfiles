@@ -59,20 +59,20 @@ setup() {
   [ "$status" -ne 0 ]
 }
 
-@test "canonical test runner remains scripts/test.sh (bats + pytest)" {
+@test "canonical test runner is scripts/test.sh (Bats only)" {
   run grep -F 'bats --jobs 1 test/' "${TEST_RUNNER_FILE}"
   [ "$status" -eq 0 ]
   run grep -F 'pytest test_python/' "${TEST_RUNNER_FILE}"
-  [ "$status" -eq 0 ]
+  [ "$status" -ne 0 ]
 }
 
-@test "Brewfile installs mise and composer via Homebrew but not bun" {
+@test "Brewfile installs yarn and jq via Homebrew but not bun" {
   [ -f "${BREWFILE}" ]
 
-  run grep -F 'brew "mise"' "${BREWFILE}"
+  run grep -F 'brew "yarn"' "${BREWFILE}"
   [ "$status" -eq 0 ]
 
-  run grep -F 'brew "composer"' "${BREWFILE}"
+  run grep -F 'brew "jq"' "${BREWFILE}"
   [ "$status" -eq 0 ]
 
   run grep -F 'brew "bun"' "${BREWFILE}"
@@ -82,7 +82,7 @@ setup() {
 @test "chezmoi template separates brew bundle from bun curl installer" {
   [ -f "${CHEZMOI_TMPL}" ]
 
-  run grep -F 'brew bundle (mise, composer' "${CHEZMOI_TMPL}"
+  run grep -F 'install/after_prereqs.sh applies brew bundle and bun' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 
   run grep -F 'bun (curl installer)' "${CHEZMOI_TMPL}"
@@ -117,7 +117,7 @@ setup() {
   run grep -F '{{ $gitEmail := "" }}' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 
-  for var in instApt instBrew instBun instMise instOmzsh; do
+  for var in instApt instBrew instBun instNvm instOmzsh; do
     run grep -F "{{ \$${var} := true }}" "${CHEZMOI_TMPL}"
     [ "$status" -eq 0 ]
   done
@@ -138,7 +138,7 @@ setup() {
   run grep -F '{{   $instApt = false }}' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 
-  run grep -F '{{   $instMise = false }}' "${CHEZMOI_TMPL}"
+  run grep -F '{{   $instNvm = false }}' "${CHEZMOI_TMPL}"
   [ "$status" -eq 0 ]
 }
 
