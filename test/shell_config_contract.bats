@@ -26,16 +26,22 @@ setup() {
   done
 }
 
-@test "dot_zshrc and dot_bashrc use mise activate without nvm or pyenv init" {
-  run grep -F 'mise activate' "${REPO_ROOT}/dot_zshrc"
-  [ "$status" -eq 0 ]
-  run grep -F 'mise activate' "${REPO_ROOT}/dot_bashrc"
-  [ "$status" -eq 0 ]
+@test "dot_zshrc and dot_bashrc load nvm without pyenv init or mise activate" {
   run grep -F 'NVM_DIR' "${REPO_ROOT}/dot_zshrc"
+  [ "$status" -eq 0 ]
+  run grep -F 'nvm.sh' "${REPO_ROOT}/dot_zshrc"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'NVM_DIR' "${REPO_ROOT}/dot_bashrc"
+  [ "$status" -eq 0 ]
+  run grep -F 'nvm.sh' "${REPO_ROOT}/dot_bashrc"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'mise activate' "${REPO_ROOT}/dot_zshrc"
   [ "$status" -ne 0 ]
   run grep -F 'pyenv init' "${REPO_ROOT}/dot_zshrc"
   [ "$status" -ne 0 ]
-  run grep -F 'NVM_DIR' "${REPO_ROOT}/dot_bashrc"
+  run grep -F 'mise activate' "${REPO_ROOT}/dot_bashrc"
   [ "$status" -ne 0 ]
   run grep -F 'pyenv init' "${REPO_ROOT}/dot_bashrc"
   [ "$status" -ne 0 ]

@@ -117,40 +117,12 @@ fi
 export BUN_INSTALL="${BUN_INSTALL:-$HOME/.bun}"
 case ":${PATH}:" in *":${BUN_INSTALL}/bin:"*) ;; *) PATH="${BUN_INSTALL}/bin:${PATH}" ;; esac
 
-# mise — Node, Python, PHP (see ~/.mise.toml)
-if command -v mise >/dev/null 2>&1; then
-  eval "$(mise activate zsh)"
-elif [ -x /opt/homebrew/bin/mise ]; then
-  eval "$(/opt/homebrew/bin/mise activate zsh)"
-elif [ -x /home/linuxbrew/.linuxbrew/bin/mise ]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/mise activate zsh)"
-elif [ -x /usr/local/bin/mise ]; then
-  eval "$(/usr/local/bin/mise activate zsh)"
+# nvm (Node — see ~/.nvmrc)
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [ ! -s "${NVM_DIR}/nvm.sh" ] && [ -s /usr/local/share/nvm/nvm.sh ]; then
+  NVM_DIR="/usr/local/share/nvm"
 fi
-
-# Auto-activate nearest .venv (walks up from $PWD)
-_find_nearest_venv() {
-  local dir="$PWD"
-  while true; do
-    [[ -d "$dir/.venv" ]] && { echo "$dir/.venv"; return 0; }
-    [[ "$dir" == "/" ]] && return 1
-    dir="${dir:h}"
-  done
-}
-
-autovenv() {
-  local venv_path=""
-  if venv_path="$(_find_nearest_venv)"; then
-    # shellcheck disable=SC2154
-    if [[ "$VIRTUAL_ENV" != "$venv_path" ]]; then
-      type deactivate &>/dev/null && deactivate 2>/dev/null
-      source "${venv_path}/bin/activate"
-    fi
-  else
-    type deactivate &>/dev/null && deactivate 2>/dev/null
-  fi
-}
-add-zsh-hook chpwd autovenv
-autovenv
-
-alias python=python3
+if [ -s "${NVM_DIR}/nvm.sh" ]; then
+  # shellcheck disable=SC1091
+  . "${NVM_DIR}/nvm.sh"
+fi

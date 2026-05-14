@@ -13,11 +13,7 @@ SCRIPT_DIR="$(cd -- "${BASH_SOURCE[0]%/*}" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/codespaces.sh"
-# shellcheck disable=SC1091
-[ -f "${REPO_ROOT}/versions.env" ] && . "${REPO_ROOT}/versions.env"
-: "${NODE_VERSION:=24}"
-: "${PYTHON_VERSION:=3.12}"
-: "${DOTFILES_PYTHON_REFRESH:=0}"
+: "${NODE_VERSION:=$(dotfiles_default_node_version_from_nvmrc "${REPO_ROOT}")}"
 
 is_wsl() {
   grep -qi microsoft /proc/version 2>/dev/null
@@ -50,18 +46,22 @@ if [ "${SHELL:-}" != "${ZSH_BIN}" ]; then
   elif [ -n "${CODESPACE_NAME:-}" ]; then
     output_message "GitHub Codespaces detected. Skipping chsh (requires password in this environment)."
   else
-    chsh -s "${ZSH_BIN}"
-    output_message "Default shell changed to Zsh. Please log out and log back in for changes to take effect."
+    if command -v chsh >/dev/null 2>&1; then
+      chsh -s "${ZSH_BIN}"
+      output_message "Default shell changed to Zsh. Please log out and log back in for changes to take effect."
+    else
+      output_message "chsh not found. Skipping default shell change."
+    fi
   fi
 fi
 
 # Instead of exec zsh, run the remaining commands in the current shell
 output_message "Continuing setup process..."
 
-# Check if nvm is available before updating
+# nvm-managed Node; enable Corepack when Node is on PATH
 if dotfiles_skip_finalize_tooling_maintenance; then
   output_message "Skipping nvm/Corepack update (Codespaces minimal profile)."
-elif [ "${DOTFILES_INSTALL_MISE:-1}" = "1" ]; then
+elif [ "${DOTFILES_INSTALL_NVM:-1}" = "1" ]; then
   _nvm_dir="$(dotfiles_resolve_nvm_dir)"
   if [ -n "${_nvm_dir}" ]; then
     output_message "Loading and updating nvm..."
@@ -79,7 +79,7 @@ elif [ "${DOTFILES_INSTALL_MISE:-1}" = "1" ]; then
     output_message "nvm not found. Skipping nvm update."
   fi
 else
-  output_message "Skipping toolchain update (DOTFILES_INSTALL_MISE=0)."
+  output_message "Skipping toolchain update (DOTFILES_INSTALL_NVM=0)."
 fi
 
 # Check if brew is available before updating
@@ -118,34 +118,6 @@ elif [ "${DOTFILES_INSTALL_OHMYZSH:-1}" = "1" ]; then
   fi
 else
   output_message "Skipping oh-my-zsh update (DOTFILES_INSTALL_OHMYZSH=0)."
-fi
-
-# Check if pyenv is available before updating
-if dotfiles_skip_finalize_tooling_maintenance; then
-  output_message "Skipping pyenv update (Codespaces minimal profile)."
-elif [ "${DOTFILES_INSTALL_MISE:-1}" = "1" ]; then
-  if [ "${DOTFILES_INSTALL_BREW:-1}" = "1" ]; then
-    if command -v pyenv &> /dev/null; then
-      output_message "Updating pyenv and Python versions..."
-      brew upgrade pyenv
-      if pyenv versions --bare | grep -Eq "^${PYTHON_VERSION}(\\.|$)"; then
-        output_message "Python ${PYTHON_VERSION}.x already present; skipping rebuild. Set DOTFILES_PYTHON_REFRESH=1 to force refresh."
-        if [ "${DOTFILES_PYTHON_REFRESH}" = "1" ]; then
-          output_message "DOTFILES_PYTHON_REFRESH=1, refreshing Python ${PYTHON_VERSION}..."
-          pyenv install "${PYTHON_VERSION}"
-        fi
-      else
-        output_message "No Python ${PYTHON_VERSION}.x found. Installing..."
-        pyenv install "${PYTHON_VERSION}"
-      fi
-    else
-      output_message "pyenv not found. Skipping pyenv update."
-    fi
-  else
-    output_message "Skipping pyenv update (DOTFILES_INSTALL_BREW=0)."
-  fi
-else
-  output_message "Skipping toolchain update (DOTFILES_INSTALL_MISE=0)."
 fi
 
 output_message "Setup completed successfully! (You can run apps.sh now; tests: ./scripts/test.sh)"

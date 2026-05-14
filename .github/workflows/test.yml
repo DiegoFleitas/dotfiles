@@ -13,17 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Install bats
         run: sudo apt-get update && sudo apt-get install -y bats
 
-      - name: Install pytest
-        run: pip install -r requirements-dev.txt
-
-      - name: Run tests (bats + pytest)
+      - name: Run tests
         run: ./scripts/test.sh
 
   bats-macos:
@@ -32,15 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Install bats
         run: brew install bats-core
 
-      - name: Install pytest
-        run: pip install -r requirements-dev.txt
-
-      - name: Run tests (bats + pytest)
+      - name: Run tests
         run: ./scripts/test.sh
