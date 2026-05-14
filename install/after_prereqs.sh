@@ -190,4 +190,5 @@ if [ "${DOTFILES_INSTALL_OHMYZSH:-1}" = "1" ]; then
     fi
 fi
 
+dotfiles_print_install_overview
 output_message "Bye! (Run source ~/.profile to apply changes)"

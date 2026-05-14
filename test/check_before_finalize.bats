@@ -15,6 +15,15 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "before_finalize prints install overview before success message" {
+  local overview_line done_line
+  overview_line="$(grep -n 'dotfiles_print_install_overview' "${TARGET_FILE}" | head -1 | cut -d: -f1)"
+  done_line="$(grep -n 'Setup completed successfully!' "${TARGET_FILE}" | head -1 | cut -d: -f1)"
+  [ -n "${overview_line}" ]
+  [ -n "${done_line}" ]
+  [ "${overview_line}" -lt "${done_line}" ]
+}
+
 @test "before_finalize uses nvm plus Corepack when nvm is enabled" {
   run grep -F 'nvm install "${NODE_VERSION}" && nvm alias default "${NODE_VERSION}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]

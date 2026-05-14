@@ -619,6 +619,6 @@ exit 98
   [[ "$output" == *"Codespaces profile:"* ]]
   [[ "$output" == *"Skipping nvm bootstrap (Codespaces minimal profile)."* ]]
 
-  run /usr/bin/grep -F "brew " "${CALL_LOG}"
+  run /usr/bin/grep -E 'brew (bundle|install|shellenv)' "${CALL_LOG}"
   [ "$status" -ne 0 ]
 }

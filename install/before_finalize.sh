@@ -120,4 +120,5 @@ else
   output_message "Skipping oh-my-zsh update (DOTFILES_INSTALL_OHMYZSH=0)."
 fi
 
+dotfiles_print_install_overview
 output_message "Setup completed successfully! (You can run apps.sh now; tests: ./scripts/test.sh)"

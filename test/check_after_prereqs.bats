@@ -18,6 +18,15 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
+@test "after_prereqs prints install overview before Bye message" {
+  local overview_line bye_line
+  overview_line="$(grep -n 'dotfiles_print_install_overview' "${TARGET_FILE}" | head -1 | cut -d: -f1)"
+  bye_line="$(grep -n 'Bye! (Run source ~/.profile to apply changes)' "${TARGET_FILE}" | head -1 | cut -d: -f1)"
+  [ -n "${overview_line}" ]
+  [ -n "${bye_line}" ]
+  [ "${overview_line}" -lt "${bye_line}" ]
+}
+
 @test "after_prereqs installs nvm only when nvm.sh is missing on disk" {
   run grep -F 'NVM_DIR="${NVM_DIR:-$HOME/.nvm}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
