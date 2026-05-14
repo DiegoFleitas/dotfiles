@@ -1,7 +1,5 @@
 # tap "homebrew/cask"
-# Node: nvm + ~/.nvmrc + Corepack in install/before_finalize.sh
-brew "yarn"
-brew "pnpm"
+# Node: nvm + ~/.nvmrc; yarn/pnpm via Corepack in install/before_finalize.sh (not Brew)
 brew "biome"   # lint + format for JS/TS (replaces eslint + prettier in one binary)
 brew "wget"
 brew "gcc" # Recommended by Homebrew

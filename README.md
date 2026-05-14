@@ -33,7 +33,7 @@ After install, run `source ~/.profile` (or open a new shell).
 - Dotfiles like `.bashrc`, `.zshrc`, `.profile`, `.gitconfig` (template)
 - Dev tooling via [nvm](https://github.com/nvm-sh/nvm) (**Node 24** per [`dot_nvmrc`](dot_nvmrc)) and [Corepack](https://nodejs.org/api/corepack.html) in `install/before_finalize.sh` when nvm installs are enabled
 - [Bun](https://bun.com) — official install script in `install/after_prereqs.sh` (not Homebrew)
-- [Homebrew](https://brew.sh/) + Brewfile (yarn, pnpm, [biome](https://biomejs.dev/), awscli, [`jq`](https://jqlang.github.io/jq/), and more)
+- [Homebrew](https://brew.sh/) + Brewfile ([biome](https://biomejs.dev/), awscli, [`jq`](https://jqlang.github.io/jq/), and more); **yarn** and **pnpm** via **Corepack** with nvm’s Node (not separate Brew formulae)
 - On **Linux**, `install/after_prereqs.sh` installs `python3` and build deps via **apt** when apt setup is enabled (no version manager)
 - Shell behavior: **nvm** loads from `~/.nvm` or the Codespaces `/usr/local/share/nvm` path when present (see `dot_zshrc` / `dot_bashrc`)
 - Setup scripts run in order; optional `apps.sh` stays manual
@@ -148,7 +148,7 @@ Tested on **Ubuntu 22.04.5 LTS** and newer.
 
 ## Version management
 
-**Node:** edit **[`dot_nvmrc`](dot_nvmrc)** (Chezmoi publishes `~/.nvmrc`). **`NODE_VERSION`** in `install/after_prereqs.sh` / `install/before_finalize.sh` defaults to **24**; keep it aligned with `dot_nvmrc` and the Node badge in this README when you bump major lines.
+**Node:** edit **[`dot_nvmrc`](dot_nvmrc)** (Chezmoi publishes `~/.nvmrc`). `install/after_prereqs.sh` and `install/before_finalize.sh` default **`NODE_VERSION`** from **`dot_nvmrc`**, then **`~/.nvmrc`**, via `dotfiles_default_node_version_from_nvmrc` in [`install/codespaces.sh`](install/codespaces.sh) (fallback **24** only if neither file yields a line). Export **`NODE_VERSION`** before apply to override. When you bump the pin, update **`dot_nvmrc`**, the **Node/README badge**, and any prose that names the default line.
 
 [`.github/renovate.json`](.github/renovate.json) updates GitHub Actions dependency pins.
 

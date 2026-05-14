@@ -7,8 +7,11 @@ setup() {
   TARGET_FILE="${REPO_ROOT}/install/before_finalize.sh"
 }
 
-@test "before_finalize defaults NODE_VERSION when not set" {
-  run grep -F ': "${NODE_VERSION:=24}"' "${TARGET_FILE}"
+@test "before_finalize defaults NODE_VERSION from dot_nvmrc via codespaces helper when not set" {
+  run grep -F 'REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'dotfiles_default_node_version_from_nvmrc "${REPO_ROOT}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 }
 

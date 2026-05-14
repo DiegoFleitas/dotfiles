@@ -7,8 +7,11 @@ setup() {
   TARGET_FILE="${REPO_ROOT}/install/after_prereqs.sh"
 }
 
-@test "after_prereqs defaults NODE_VERSION and NVM_INSTALL_VERSION when not set" {
-  run grep -F ': "${NODE_VERSION:=24}"' "${TARGET_FILE}"
+@test "after_prereqs defaults NODE_VERSION from dot_nvmrc via codespaces helper when not set" {
+  run grep -F 'REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"' "${TARGET_FILE}"
+  [ "$status" -eq 0 ]
+
+  run grep -F 'dotfiles_default_node_version_from_nvmrc "${REPO_ROOT}"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 
   run grep -F ': "${NVM_INSTALL_VERSION:=v0.40.3}"' "${TARGET_FILE}"
@@ -41,7 +44,7 @@ setup() {
   [ "$status" -eq 0 ]
 }
 
-@test "after_prereqs runs brew bundle (installs Brewfile packages e.g. yarn, jq)" {
+@test "after_prereqs runs brew bundle (installs Brewfile packages e.g. jq)" {
   run grep -F 'brew bundle --file="${HOME}/.local/share/chezmoi/Brewfile"' "${TARGET_FILE}"
   [ "$status" -eq 0 ]
 

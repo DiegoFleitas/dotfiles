@@ -9,9 +9,10 @@ output_message() {
 }
 
 SCRIPT_DIR="$(cd -- "${BASH_SOURCE[0]%/*}" && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/codespaces.sh"
-: "${NODE_VERSION:=24}"
+: "${NODE_VERSION:=$(dotfiles_default_node_version_from_nvmrc "${REPO_ROOT}")}"
 : "${NVM_INSTALL_VERSION:=v0.40.3}"
 
 if dotfiles_is_minimal_codespace; then

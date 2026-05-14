@@ -66,16 +66,19 @@ setup() {
   [ "$status" -ne 0 ]
 }
 
-@test "Brewfile installs yarn and jq via Homebrew but not bun" {
+@test "Brewfile installs jq via Homebrew but not bun, yarn, or pnpm" {
   [ -f "${BREWFILE}" ]
-
-  run grep -F 'brew "yarn"' "${BREWFILE}"
-  [ "$status" -eq 0 ]
 
   run grep -F 'brew "jq"' "${BREWFILE}"
   [ "$status" -eq 0 ]
 
   run grep -F 'brew "bun"' "${BREWFILE}"
+  [ "$status" -ne 0 ]
+
+  run grep -F 'brew "yarn"' "${BREWFILE}"
+  [ "$status" -ne 0 ]
+
+  run grep -F 'brew "pnpm"' "${BREWFILE}"
   [ "$status" -ne 0 ]
 }
 
